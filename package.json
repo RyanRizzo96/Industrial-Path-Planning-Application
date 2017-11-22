@@ -17,13 +17,15 @@
   "author": "GitHub",
   "license": "CC0-1.0",
   "devDependencies": {
-    "electron": "~1.7.8"
+    "electron": "~1.7.8",
+    "electron-rebuild": "^1.6.0"
   },
   "dependencies": {
     "bootstrap": "^3.3.7",
     "electron-reload": "^1.2.2",
     "interact.js": "^1.2.8",
     "path-from-image": "0.0.4",
-    "three": "^0.88.0"
+    "three": "^0.88.0",
+    "zhang-suen": "0.0.5"
   }
 }

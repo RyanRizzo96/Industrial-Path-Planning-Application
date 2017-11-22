@@ -2,9 +2,7 @@ var canvas, scene, renderer, camera, controls;
 var gridWithDiagonals, gridWithDiagonals2, grid, raycaster, locationX, locationZ;
 var ground; // A square base on which the cylinders stand.
 var cylinder; // A cylinder that will be cloned to make the visible cylinders.
-var line_vert;
-var line_hor;
-var home;
+var line_vert, line_hor, home;
 var scene; // An Object3D that contains all the mesh objects in the scene.
 // Rotation of the scene is done by rotating the world about its
 // y-axis.  (I couldn't rotate the camera about the scene since
@@ -13,54 +11,27 @@ var scene; // An Object3D that contains all the mesh objects in the scene.
 
 var ROTATE = 1,
     DRAG = 2,
-    ADD = 3,
-    DELETE = 4; // Possible mouse actions
-ADD_machine = 5;
-ADD_LINE = 6;
-ADD_LINE_HOR = 7;
-ADD_HOME = 8;
+    ADD_NODE = 3,
+    DELETE = 4,
+    ADD_MACHINE = 5,
+    ADD_LINE = 6,
+    ADD_LINE_HOR = 7,
+    ADD_HOME = 8,
+    GET_IMAGE = 9;
 var mouseAction; // currently selected mouse action
 var dragItem; // the cylinder that is being dragged, during a drag operation
 var intersects; //the objects intersected
 
-var targetForDragging; // An invisible object that is used as the target for raycasting while
-// dragging a cylinder.  I use it to find the new location of the
-// cylinder.  I tried using the ground for this purpose, but to get
-// the motion right, I needed a target that is at the same height
-// above the ground as the point where the user clicked the cylinder.
-
-var objects = [];
-var mouse, plane;
-var cubeGeometry = new THREE.BoxGeometry(50, 50, 50);
-var cubeMaterial = new THREE.MeshLambertMaterial({ color: 0x00ff80, overdraw: 0.5 });
+var targetForDragging; // An invisible object that is used as the target for raycasting while dragging a cylinder.
 
 
-// call functions to initialise trackballcontrols
-//init();
-// animate();
+var coords_node, coords_machine, coords_home;
 
 function download() {
     var dt = canvas.toDataURL('PathPlanner/jpeg');
     this.href = dt;
 }
 document.getElementById('download').addEventListener('click', download, false);
-
-const fs = require('fs');
-const jpeg = require('jpeg-js');
-const PathFromImage = require('path-from-image');
-
-const bluePointCoords = [62, 413];
-const redPointCoords = [514, 39];
-
-const image = jpeg.decode(fs.readFileSync('road.jpg'), true);
-const pathFromImage = new PathFromImage({
-    width: image.width,
-    height: image.height,
-    imageData: image.data,
-    colorPatterns: [{ r: [60, 255], g: [0, 70], b: [60, 255] }], // description of the mauve / ping color
-});
-const path = pathFromImage.path(bluePointCoords, redPointCoords); // => [[62, 413], [63, 406], [69, 390], ...]
-
 
 function init() {
 
@@ -86,6 +57,7 @@ function init() {
     document.getElementById("mouseAddLine").onchange = doChangeMouseAction;
     document.getElementById("mouseAddLineHor").onchange = doChangeMouseAction;
     document.getElementById("mouseDelete").onchange = doChangeMouseAction;
+    document.getElementById("mouseImage").onchange = doChangeMouseAction;
     createScene();
 
 
@@ -180,18 +152,20 @@ function createScene() {
     home = new THREE.Mesh(geometry5, material4);
     home.position.y = 0.01;
 
+    var col_gray = new THREE.Color("rgb(128, 128, 128)");
+
     var geometry3 = new THREE.BoxGeometry(0.8, 1, 7);
-    var material2 = new THREE.MeshBasicMaterial({ color: "gray" });
+    var material2 = new THREE.MeshBasicMaterial({ color: col_gray });
     line_vert = new THREE.Mesh(geometry3, material2);
     line_vert.position.y = 0.01;
 
     var geometry4 = new THREE.BoxGeometry(7, 1, 0.8);
-    var material3 = new THREE.MeshBasicMaterial({ color: "gray" });
+    var material3 = new THREE.MeshBasicMaterial({ color: col_gray });
     line_hor = new THREE.Mesh(geometry4, material3);
     line_hor.position.y = 0.01;
 }
 
-function addCube(x, z) {
+function addMachine(x, z) {
     var obj = cube.clone();
     obj.position.x = x;
     obj.position.z = z;
@@ -219,7 +193,7 @@ function addLineHor(x, z) {
     scene.add(obj);
 }
 
-function addCylinder(x, z) {
+function addNode(x, z) {
     var obj = cylinder.clone();
     obj.position.x = x;
     obj.position.z = z;
@@ -262,27 +236,27 @@ function doMouseDown(x, y) {
                 render();
                 return true;
             }
-        case ADD:
+        case ADD_NODE:
 
             if (objectHit == grid || objectHit == gridWithDiagonals2) {
 
                 var locationX = intersect.point.x; // Gives the point of intersection in world coords
                 var locationZ = intersect.point.z;
-                var coords = new THREE.Vector3(locationX, 0, locationZ);
-                addCylinder(coords.x, coords.z);
-                console.log("Node at: " + coords.x, coords.z);
+                coords_node = new THREE.Vector3(locationX, 0, locationZ);
+                addNode(coords_node.x, coords_node.z);
+                console.log("Node at: " + coords_node.x, coords_node.z);
                 render();
             }
 
             return false;
-        case ADD_machine:
+        case ADD_MACHINE:
             if (objectHit == grid || objectHit == gridWithDiagonals2) {
 
                 var locationX1 = intersect.point.x; // Gives the point of intersection in world coords
                 var locationZ1 = intersect.point.z;
-                var coords1 = new THREE.Vector3(locationX1, 0, locationZ1);
-                addCube(coords1.x, coords1.z);
-                console.log("Machine at: " + coords1.x, coords1.z);
+                coords_machine = new THREE.Vector3(locationX1, 0, locationZ1);
+                addMachine(coords_machine.x, coords_machine.z);
+                console.log("Machine at: " + coords_machine.x, coords_machine.z);
                 render();
             }
             return false;
@@ -291,9 +265,9 @@ function doMouseDown(x, y) {
 
                 var locationX5 = intersect.point.x; // Gives the point of intersection in world coords
                 var locationZ5 = intersect.point.z;
-                var coords5 = new THREE.Vector3(locationX5, 0, locationZ5);
-                addHome(coords5.x, coords5.z);
-                console.log("Home at: " + coords5.x, coords5.z);
+                coords_home = new THREE.Vector3(locationX5, 0, locationZ5);
+                addHome(coords_home.x, coords_home.z);
+                console.log("Home at: " + coords_home.x, coords_home.z);
                 render();
             }
             return false;
@@ -316,6 +290,26 @@ function doMouseDown(x, y) {
                 addLineHor(coords3.x, coords3.z);
                 render();
             }
+            return false;
+        case GET_IMAGE:
+
+            const fs = require('fs');
+            const jpeg = require('jpeg-js');
+            const PathFromImage = require('path-from-image');
+
+
+            const bluePointCoords = [0, 0];
+
+            const image = jpeg.decode(fs.readFileSync('Images/map-start-end.jpg'), true);
+            const pathFromImage = new PathFromImage({
+                width: image.width,
+                height: image.height,
+                imageData: image.data,
+                colorPatterns: [{ r: [128], g: [128], b: [128] }], // description of the mauve / ping color
+            });
+            const path = pathFromImage.path(coords_home, bluePointCoords); // => [[62, 413], [63, 406], [69, 390], ...]
+            console.log(path);
+
             return false;
 
         default: // DELETE
@@ -367,11 +361,11 @@ function doChangeMouseAction() {
         controls.enableRotate = false;
 
     } else if (document.getElementById("mouseAdd").checked) {
-        mouseAction = ADD;
+        mouseAction = ADD_NODE;
         controls.enableRotate = false;
 
     } else if (document.getElementById("mouseAddMachine").checked) {
-        mouseAction = ADD_machine;
+        mouseAction = ADD_MACHINE;
         controls.enableRotate = false;
 
     } else if (document.getElementById("mouseAddLine").checked) {
@@ -383,6 +377,9 @@ function doChangeMouseAction() {
         controls.enableRotate = false;
     } else if (document.getElementById("mouseAddHome").checked) {
         mouseAction = ADD_HOME;
+        controls.enableRotate = false;
+    } else if (document.getElementById("mouseImage").checked) {
+        mouseAction = GET_IMAGE;
         controls.enableRotate = false;
     } else {
         mouseAction = DELETE;

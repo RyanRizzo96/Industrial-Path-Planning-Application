@@ -10,7 +10,7 @@
 <body>
     <div class="row" id="title">
         <div class="col-xs-10">
-            <h1>Path Planner App</h1>
+            <h1>Path Planner </h1>
         </div>
 
         <body onload="init()">
@@ -81,6 +81,14 @@
                         <a id="download" download="PathPlanner.jpg">Download as image</a>
                     </div>
                 </li>
+
+                <li>
+                    <input type="radio" id="mouseImage" name="selector">
+                    <label for="mouseImage">Get Image</label>
+                    <div class="check">
+                        <div class="inside"></div>
+                    </div>
+                </li>
             </ul>
 
             <p id="canvasP" align="center">
@@ -103,6 +111,16 @@
         <script src="./js/canvas-renderer.js"></script>
         <script src="./js/Projector.js"></script>
         <script src="./js/three.js"></script>
+        <script src="./node_modules/path-from-image/dist/ZhangSuen.js"></script>
+
+        <!-- <script src="./node_modules/zhang-suen/src/index.js"></script> -->
+
+        <!-- <script src="./node_modules/path-from-image/dist/PixelsColorFilter.js"></script>
+        <script src="./node_modules/path-from-image/dist/PathFromImage.js"></script>
+        <script src="./node_modules/path-from-image/dist/LightenPixelsCount.js"></script>
+        <script src="./node_modules/path-from-image/dist/GenerateGraph.js"></script>
+        <script src="./node_modules/path-from-image/dist/DouglasPeucker.js"></script>
+        <script src="./node_modules/path-from-image/dist/BitsArrayToJpeg.js"></script> -->
         <!-- <script src="./js/voxels.js"></script> -->
 
         <!-- <script src="./node_modules/interact.js/interact.js"></script>
