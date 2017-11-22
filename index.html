@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <title>Path Planner</title>
+    <link rel="stylesheet" href="./css/styles.css">
+</head>
+
+<body>
+    <div class="row" id="title">
+        <div class="col-xs-10">
+            <h1>Path Planner App</h1>
+        </div>
+
+        <body onload="init()">
+            <p><b>Mouse Action:</b></p>
+            <ul>
+                <li>
+                    <input type="radio" id="mouseRotate" name="selector">
+                    <label for="mouseRotate">Rotate</label>
+                    <div class="check"></div>
+                </li>
+
+                <li>
+                    <input type="radio" name="selector" id="mouseDrag">
+                    <label for="mouseDrag">Drag</label>
+                    <div class="check">
+                        <div class="inside"></div>
+                    </div>
+                </li>
+
+                <li>
+                    <input type="radio" id="mouseAddHome" name="selector">
+                    <label for="mouseAddHome">Add Home</label>
+                    <div class="check">
+                        <div class="inside"></div>
+                    </div>
+                </li>
+
+                <li>
+                    <input type="radio" id="mouseAdd" name="selector">
+                    <label for="mouseAdd">Add Node</label>
+                    <div class="check">
+                        <div class="inside"></div>
+                    </div>
+                </li>
+
+                <li>
+                    <input type="radio" id="mouseAddMachine" name="selector">
+                    <label for="mouseAddMachine">Add Machine</label>
+                    <div class="check">
+                        <div class="inside"></div>
+                    </div>
+                </li>
+                <li>
+                    <input type="radio" id="mouseAddLine" name="selector">
+                    <label for="mouseAddLine">Add Line Vert</label>
+                    <div class="check">
+                        <div class="inside"></div>
+                    </div>
+                </li>
+                <li>
+                    <input type="radio" id="mouseAddLineHor" name="selector">
+                    <label for="mouseAddLineHor">Add Line Hor</label>
+                    <div class="check">
+                        <div class="inside"></div>
+                    </div>
+                </li>
+
+                <li>
+                    <input type="radio" id="mouseDelete" name="selector">
+                    <label for="mouseDelete">Delete</label>
+                    <div class="check">
+                        <div class="inside"></div>
+                    </div>
+                </li>
+                <li>
+                    <div class="button">
+                        <!-- <button class="btn" type="submit">Submit!</button> -->
+                        <a id="download" download="PathPlanner.jpg">Download as image</a>
+                    </div>
+                </li>
+            </ul>
+
+            <p id="canvasP" align="center">
+                <div id="canvas-holder">
+                    <canvas id="canvas" width="1505" height="500"></canvas>
+                </div>
+            </p>
+            <!-- <meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0"> -->
+        </body>
+
+
+        <script>
+            // You can also require other files to run in this process
+            // require('./renderer.js')
+        </script>
+
+        <script src="./node_modules/three/build/three.js"></script>
+        <script src="./js/TrackballControls.js"></script>
+        <script src="./js/OrbitControls.js"></script>
+        <script src="./js/canvas-renderer.js"></script>
+        <script src="./js/Projector.js"></script>
+        <script src="./js/three.js"></script>
+        <!-- <script src="./js/voxels.js"></script> -->
+
+        <!-- <script src="./node_modules/interact.js/interact.js"></script>
+    <script src="./js/interact.js"></script> -->
+
+</html>
