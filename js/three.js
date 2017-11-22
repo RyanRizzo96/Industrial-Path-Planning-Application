@@ -270,6 +270,7 @@ function doMouseDown(x, y) {
                 var locationZ = intersect.point.z;
                 var coords = new THREE.Vector3(locationX, 0, locationZ);
                 addCylinder(coords.x, coords.z);
+                console.log("Node at: " + coords.x, coords.z);
                 render();
             }
 
@@ -281,6 +282,7 @@ function doMouseDown(x, y) {
                 var locationZ1 = intersect.point.z;
                 var coords1 = new THREE.Vector3(locationX1, 0, locationZ1);
                 addCube(coords1.x, coords1.z);
+                console.log("Machine at: " + coords1.x, coords1.z);
                 render();
             }
             return false;
@@ -291,6 +293,7 @@ function doMouseDown(x, y) {
                 var locationZ5 = intersect.point.z;
                 var coords5 = new THREE.Vector3(locationX5, 0, locationZ5);
                 addHome(coords5.x, coords5.z);
+                console.log("Home at: " + coords5.x, coords5.z);
                 render();
             }
             return false;
