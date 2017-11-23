@@ -28,7 +28,7 @@ var targetForDragging; // An invisible object that is used as the target for ray
 var coords_node, coords_machine, coords_home;
 
 function download() {
-    var dt = canvas.toDataURL('PathPlanner/jpeg');
+    var dt = canvas.toDataURL('PathPlanner/jpeg', 1.0);
     this.href = dt;
 }
 document.getElementById('download').addEventListener('click', download, false);
@@ -297,17 +297,17 @@ function doMouseDown(x, y) {
             const jpeg = require('jpeg-js');
             const PathFromImage = require('path-from-image');
 
-
+            const redPointCoords = [0, -16];
             const bluePointCoords = [0, 0];
 
-            const image = jpeg.decode(fs.readFileSync('Images/map-start-end.jpg'), true);
+            const image = jpeg.decode(fs.readFileSync('Images/PathPlanner.jpg'), true);
             const pathFromImage = new PathFromImage({
                 width: image.width,
                 height: image.height,
                 imageData: image.data,
                 colorPatterns: [{ r: [128], g: [128], b: [128] }], // description of the mauve / ping color
             });
-            const path = pathFromImage.path(coords_home, bluePointCoords); // => [[62, 413], [63, 406], [69, 390], ...]
+            const path = pathFromImage.path(redPointCoords, bluePointCoords); // => [[62, 413], [63, 406], [69, 390], ...]
             console.log(path);
 
             return false;
