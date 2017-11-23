@@ -88,7 +88,7 @@ function createScene() {
 
     /**Creating the scene */
     scene = new THREE.Scene();
-    scene.background = new THREE.Color(0xf0f0f0);
+    scene.background = new THREE.Color(0x00ff00);
 
     camera.lookAt(new THREE.Vector3(0, 1, 0));
     camera.add(new THREE.PointLight(0xffffff, 0.7)); // point light at camera position
@@ -122,10 +122,10 @@ function createScene() {
     // gridWithDiagonals2.position.y = -0.02;
     // scene.add(gridWithDiagonals2);
 
-    var geometry = new THREE.BoxBufferGeometry(100, 100, 100);
-    var edges = new THREE.EdgesGeometry(geometry);
-    var line = new THREE.LineSegments(edges, new THREE.LineBasicMaterial({ color: 0xffffff }));
-    scene.add(line);
+    // var geometry = new THREE.BoxBufferGeometry(100, 100, 100);
+    // var edges = new THREE.EdgesGeometry(geometry);
+    // var line = new THREE.LineSegments(edges, new THREE.LineBasicMaterial({ color: 0xffffff }));
+    // scene.add(line);
 
     targetForDragging = new THREE.Mesh(
         new THREE.BoxGeometry(80, 0.1, 80),
@@ -305,7 +305,7 @@ function doMouseDown(x, y) {
                 width: image.width,
                 height: image.height,
                 imageData: image.data,
-                colorPatterns: [{ r: [0, 128], g: [0, 128], b: [0, 128] }], // description of the mauve / ping color
+                colorPatterns: [{ r: [60, 128], g: [0, 128], b: [60, 128] }], // description of the mauve / ping color
             });
             const path = pathFromImage.path(redPointCoords, bluePointCoords); // => [[62, 413], [63, 406], [69, 390], ...]
             console.log(path);
