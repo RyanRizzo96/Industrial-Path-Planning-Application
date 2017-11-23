@@ -21,10 +21,12 @@ var ROTATE = 1,
 var mouseAction; // currently selected mouse action
 var dragItem; // the cylinder that is being dragged, during a drag operation
 var intersects; //the objects intersected
-
+var mouseX, mouseY, newMouseX, newMouseY;
+var n = 0;
+var CheckMovement;
 var targetForDragging; // An invisible object that is used as the target for raycasting while dragging a cylinder.
 
-
+var xCord, yCord, xCordHome, yCordHome;
 var coords_node, coords_machine, coords_home;
 
 function download() {
@@ -45,6 +47,23 @@ function init() {
         preserveDrawingBuffer: true
     });
 
+    canvas.addEventListener('mousemove', function(evt) {
+        CheckMovement = setTimeout(function() {
+            HasMouseStopped(evt);
+        }, 1000);
+    }, true);
+
+    function HasMouseStopped(evt) {
+
+        var mousePos = getMousePos(canvas, evt);
+    }
+
+    function getMousePos(canvas, evt) {
+        var rect = canvas.getBoundingClientRect();
+        xCord = evt.clientX - rect.left;
+        yCord = evt.clientY - rect.top;
+        console.log(xCord, yCord);
+    }
 
 
     document.getElementById("mouseRotate").checked = true;
@@ -59,6 +78,8 @@ function init() {
     document.getElementById("mouseDelete").onchange = doChangeMouseAction;
     document.getElementById("mouseImage").onchange = doChangeMouseAction;
     createScene();
+
+
 
 
     setUpMouseHander(canvas, doMouseDown, doMouseMove);
@@ -88,7 +109,7 @@ function createScene() {
 
     /**Creating the scene */
     scene = new THREE.Scene();
-    scene.background = new THREE.Color(0x00ff00);
+    scene.background = new THREE.Color(0xffffff);
 
     camera.lookAt(new THREE.Vector3(0, 1, 0));
     camera.add(new THREE.PointLight(0xffffff, 0.7)); // point light at camera position
@@ -244,7 +265,7 @@ function doMouseDown(x, y) {
                 var locationZ = intersect.point.z;
                 coords_node = new THREE.Vector3(locationX, 0, locationZ);
                 addNode(coords_node.x, coords_node.z);
-                console.log("Node at: " + coords_node.x, coords_node.z);
+                console.log("Node at: " + xCord, yCord);
                 render();
             }
 
@@ -256,7 +277,7 @@ function doMouseDown(x, y) {
                 var locationZ1 = intersect.point.z;
                 coords_machine = new THREE.Vector3(locationX1, 0, locationZ1);
                 addMachine(coords_machine.x, coords_machine.z);
-                console.log("Machine at: " + coords_machine.x, coords_machine.z);
+                console.log("Machine at: " + xCord, yCord);
                 render();
             }
             return false;
@@ -267,7 +288,21 @@ function doMouseDown(x, y) {
                 var locationZ5 = intersect.point.z;
                 coords_home = new THREE.Vector3(locationX5, 0, locationZ5);
                 addHome(coords_home.x, coords_home.z);
-                console.log("Home at: " + coords_home.x, coords_home.z);
+                console.log("Home at: " + xCord, yCord);
+
+                canvas.addEventListener('mousemove', function(evt) {
+                    CheckMovement = setTimeout(function() {
+                        HasMouseStopped(evt);
+                    }, 1000);
+                }, true);
+
+                var mousePos = getMousePos(canvas, evt);
+
+                var rect = canvas.getBoundingClientRect();
+                xCordHome = evt.clientX - rect.left;
+                yCordHome = evt.clientY - rect.top;
+                console.log(xCordHome, yCordHome);
+
                 render();
             }
             return false;
@@ -288,6 +323,7 @@ function doMouseDown(x, y) {
                 var locationZ3 = intersect.point.z;
                 var coords3 = new THREE.Vector3(locationX3, 0, locationZ3);
                 addLineHor(coords3.x, coords3.z);
+
                 render();
             }
             return false;
@@ -297,8 +333,8 @@ function doMouseDown(x, y) {
             const jpeg = require('jpeg-js');
             const PathFromImage = require('path-from-image');
 
-            const redPointCoords = [0, -16];
-            const bluePointCoords = [0, 0];
+            const redPointCoords = [750, 250];
+            const bluePointCoords = [750, 342];
 
             const image = jpeg.decode(fs.readFileSync('Images/PathPlanner1.jpg'), true);
             const pathFromImage = new PathFromImage({
