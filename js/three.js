@@ -18,7 +18,7 @@ var n = 0;
 var CheckMovement;
 var targetForDragging; // An invisible object that is used as the target for raycasting while dragging a cylinder.
 
-var xCord, yCord, xCordHome, yCordHome;
+var xCordMachine, yCordMachine, xCordHome, yCordHome;
 var coords_node, coords_machine, coords_home;
 
 //Function to find shortest path
@@ -27,17 +27,20 @@ function findPath() {
     const jpeg = require('jpeg-js');
     const PathFromImage = require('path-from-image');
 
-    const redPointCoords = [752, 250];
-    const bluePointCoords = [752, 406];
+    // const startCoords = [xCordHome, yCordHome];
+    // const finishCoords = [xCordMachine, yCordMachine];
 
-    const image = jpeg.decode(fs.readFileSync('Images/PathPlanner4.jpg'), true);
+    const startCoords = [677, 344];
+    const finishCoords = [877, 130];
+
+    const image = jpeg.decode(fs.readFileSync('Images/PathPlanner.jpg'), true);
     const pathFromImage = new PathFromImage({
         width: image.width,
         height: image.height,
         imageData: image.data,
-        colorPatterns: [{ r: [0, 128], g: [0, 128], b: [0, 128] }], // description of the mauve / ping color
+        colorPatterns: [{ r: [60, 75], g: [0, 0], b: [60, 130] }], // description of the mauve / ping color
     });
-    const path = pathFromImage.path(redPointCoords, bluePointCoords); // => [[62, 413], [63, 406], [69, 390], ...]
+    const path = pathFromImage.path(startCoords, finishCoords); // => [[62, 413], [63, 406], [69, 390], ...]
     console.log(path);
 }
 
@@ -63,7 +66,7 @@ function init() {
     canvas.addEventListener('mousemove', function(evt) {
         CheckMovement = setTimeout(function() {
             HasMouseStopped(evt);
-        }, 1000);
+        }, 2000);
     }, true);
 
     function HasMouseStopped(evt) {
@@ -74,17 +77,21 @@ function init() {
     function getMousePos(canvas, evt) {
         var rect = canvas.getBoundingClientRect();
         // Math.round to get rid of long decimal place
-        xCord = Math.round((evt.clientX - rect.left) / (rect.right - rect.left) * canvas.width);
-        yCord = Math.round((evt.clientY - rect.top) / (rect.bottom - rect.top) * canvas.height);
-        console.log(xCord, yCord);
+        xCordMachine = Math.round((evt.clientX - rect.left) / (rect.right - rect.left) * canvas.width);
+        yCordMachine = Math.round((evt.clientY - rect.top) / (rect.bottom - rect.top) * canvas.height);
+        console.log('x: ' + xCordMachine + ' y: ' + yCordMachine);
+        xCordHome = Math.round((evt.clientX - rect.left) / (rect.right - rect.left) * canvas.width);
+        yCordHome = Math.round((evt.clientY - rect.top) / (rect.bottom - rect.top) * canvas.height);
     }
 
 
-    document.getElementById("mouseRotate").checked = true;
-    mouseAction = ROTATE;
-    document.getElementById("mouseRotate").onchange = doChangeMouseAction;
+    // document.getElementById("mouseRotate").checked = true;
+    // mouseAction = ROTATE;
+    // document.getElementById("mouseRotate").onchange = doChangeMouseAction;
     // document.getElementById("mouseDrag").onchange = doChangeMouseAction;
     document.getElementById("mouseAdd").onchange = doChangeMouseAction;
+    document.getElementById("mouseAddHome").checked = true;
+    mouseAction = ADD_HOME;
     document.getElementById("mouseAddHome").onchange = doChangeMouseAction;
     document.getElementById("mouseAddMachine").onchange = doChangeMouseAction;
     document.getElementById("mouseAddLine").onchange = doChangeMouseAction;
@@ -98,13 +105,13 @@ function init() {
     raycaster = new THREE.Raycaster();
     render();
 
-    controls = new THREE.OrbitControls(camera, canvas);
-    controls.rotateSpeed = 0.4;
-    controls.zoomSpeed = 1;
-    //Disable right click movement to center pixel co-ords
-    controls.enablePan = false;
-    controls.addEventListener('change', render, renderer.domElement);
-    controls.update();
+    // controls = new THREE.OrbitControls(camera, canvas);
+    // controls.rotateSpeed = 0.4;
+    // controls.zoomSpeed = 1;
+    // //Disable right click movement to center pixel co-ords
+    // controls.enablePan = false;
+    // controls.addEventListener('change', render, renderer.domElement);
+    // controls.update();
 }
 
 // loop that causes the renderer to draw the scene 60 times per second.
@@ -117,8 +124,8 @@ function createScene() {
     renderer.setClearColor(0x222222);
     // First parameter is FOV in degrees. Second: Aspect ratio. Third/Fourth: Near/Far clipping plane
     camera = new THREE.PerspectiveCamera(60, canvas.width / canvas.height, 1, 10000);
-    camera.position.z = -15;
-    camera.position.y = 75;
+    camera.position.z = 0;
+    camera.position.y = 70;
 
     /**Creating the scene */
     scene = new THREE.Scene();
@@ -160,15 +167,15 @@ function createScene() {
     home = new THREE.Mesh(geometry5, material4);
     home.position.y = 0.01;
 
-    var col_gray = new THREE.Color("rgb(128, 128, 128)");
+    var col_gray = new THREE.Color("rgb(75, 0, 130)");
 
     //Geometry for path
-    var geometry3 = new THREE.BoxGeometry(0.5, 1, 7);
+    var geometry3 = new THREE.BoxGeometry(1, 1, 7);
     var material2 = new THREE.MeshBasicMaterial({ color: col_gray });
     line_vert = new THREE.Mesh(geometry3, material2);
     line_vert.position.y = 0.01;
 
-    var geometry4 = new THREE.BoxGeometry(7, 1, 0.5);
+    var geometry4 = new THREE.BoxGeometry(7, 1, 1);
     var material3 = new THREE.MeshBasicMaterial({ color: col_gray });
     line_hor = new THREE.Mesh(geometry4, material3);
     line_hor.position.y = 0.01;
@@ -249,7 +256,7 @@ function doMouseDown(x, y) {
                 var locationZ = intersect.point.z;
                 coords_node = new THREE.Vector3(locationX, 0, locationZ);
                 addNode(coords_node.x, coords_node.z);
-                console.log("Node at: " + xCord, yCord);
+                // console.log("Node at: " + xCord, yCord);
                 render();
             }
             return false;
@@ -260,7 +267,7 @@ function doMouseDown(x, y) {
                 var locationZ1 = intersect.point.z;
                 coords_machine = new THREE.Vector3(locationX1, 0, locationZ1);
                 addMachine(coords_machine.x, coords_machine.z);
-                console.log("Machine at: " + xCord, yCord);
+                console.log("Machine at: " + xCordMachine, yCordMachine);
                 render();
             }
             return false;
@@ -270,7 +277,7 @@ function doMouseDown(x, y) {
                 var locationZ5 = intersect.point.z;
                 coords_home = new THREE.Vector3(locationX5, 0, locationZ5);
                 addHome(coords_home.x, coords_home.z);
-                console.log("Home at: " + xCord, yCord);
+                console.log("Home at: " + xCordHome, yCordHome);
                 render();
             }
             return false;
@@ -336,34 +343,24 @@ function doMouseMove(x, y, evt, prevX, prevY) {
 }
 
 function doChangeMouseAction() {
-    if (document.getElementById("mouseRotate").checked) {
-        mouseAction = ROTATE;
-        controls.enableRotate = true;
-
-    }
+    // if (document.getElementById("mouseRotate").checked) {
+    //     mouseAction = ROTATE;
+    // }
     // else if (document.getElementById("mouseDrag").checked) {
     //     mouseAction = DRAG;
     //     controls.enableRotate = false;
 
     // } 
-    else if (document.getElementById("mouseAdd").checked) {
+    if (document.getElementById("mouseAdd").checked) {
         mouseAction = ADD_NODE;
-        controls.enableRotate = false;
-
     } else if (document.getElementById("mouseAddMachine").checked) {
         mouseAction = ADD_MACHINE;
-        controls.enableRotate = false;
-
     } else if (document.getElementById("mouseAddLine").checked) {
         mouseAction = ADD_LINE;
-        controls.enableRotate = false;
-
     } else if (document.getElementById("mouseAddLineHor").checked) {
         mouseAction = ADD_LINE_HOR;
-        controls.enableRotate = false;
     } else if (document.getElementById("mouseAddHome").checked) {
         mouseAction = ADD_HOME;
-        controls.enableRotate = false;
     }
     // else if (document.getElementById("mouseImage").checked) {
     //     mouseAction = GET_IMAGE;
@@ -371,7 +368,7 @@ function doChangeMouseAction() {
     // } 
     else {
         mouseAction = DELETE;
-        controls.enableRotate = false;
+        // controls.enableRotate = false;
     }
 }
 window.requestAnimationFrame =
