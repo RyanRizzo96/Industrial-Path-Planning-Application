@@ -1,14 +1,6 @@
 var canvas, scene, renderer, camera, controls;
 var gridWithDiagonals, gridWithDiagonals2, grid, raycaster, locationX, locationZ;
-var ground; // A square base on which the cylinders stand.
-var cylinder; // A cylinder that will be cloned to make the visible cylinders.
-var line_vert, line_hor, home;
-var scene; // An Object3D that contains all the mesh objects in the scene.
-// Rotation of the scene is done by rotating the world about its
-// y-axis.  (I couldn't rotate the camera about the scene since
-// the Raycaster wouldn't work with a camera that was a child
-// of a rotated object.)
-
+var line_vert, line_hor, home, scene, cylinder, ground;
 var ROTATE = 1,
     DRAG = 2,
     ADD_NODE = 3,
@@ -29,14 +21,35 @@ var targetForDragging; // An invisible object that is used as the target for ray
 var xCord, yCord, xCordHome, yCordHome;
 var coords_node, coords_machine, coords_home;
 
+//Function to find shortest path
+function findPath() {
+    const fs = require('fs');
+    const jpeg = require('jpeg-js');
+    const PathFromImage = require('path-from-image');
+
+    const redPointCoords = [752, 250];
+    const bluePointCoords = [752, 406];
+
+    const image = jpeg.decode(fs.readFileSync('Images/PathPlanner4.jpg'), true);
+    const pathFromImage = new PathFromImage({
+        width: image.width,
+        height: image.height,
+        imageData: image.data,
+        colorPatterns: [{ r: [0, 128], g: [0, 128], b: [0, 128] }], // description of the mauve / ping color
+    });
+    const path = pathFromImage.path(redPointCoords, bluePointCoords); // => [[62, 413], [63, 406], [69, 390], ...]
+    console.log(path);
+}
+
+//Function to downlaod image to user workspace
 function download() {
     var dt = canvas.toDataURL('image/jpeg');
     this.href = dt;
 }
 document.getElementById('download').addEventListener('click', download, false);
 
+//Function to initialise canvas and scene
 function init() {
-
     canvas = document.getElementById("canvas");
     renderer = new THREE.WebGLRenderer({
         canvas: canvas,
@@ -60,8 +73,9 @@ function init() {
 
     function getMousePos(canvas, evt) {
         var rect = canvas.getBoundingClientRect();
-        xCord = evt.clientX - rect.left;
-        yCord = evt.clientY - rect.top;
+        // Math.round to get rid of long decimal place
+        xCord = Math.round((evt.clientX - rect.left) / (rect.right - rect.left) * canvas.width);
+        yCord = Math.round((evt.clientY - rect.top) / (rect.bottom - rect.top) * canvas.height);
         console.log(xCord, yCord);
     }
 
@@ -76,11 +90,8 @@ function init() {
     document.getElementById("mouseAddLine").onchange = doChangeMouseAction;
     document.getElementById("mouseAddLineHor").onchange = doChangeMouseAction;
     document.getElementById("mouseDelete").onchange = doChangeMouseAction;
-    document.getElementById("mouseImage").onchange = doChangeMouseAction;
+    // document.getElementById("mouseImage").onchange = doChangeMouseAction;
     createScene();
-
-
-
 
     setUpMouseHander(canvas, doMouseDown, doMouseMove);
     setUpTouchHander(canvas, doMouseDown, doMouseMove);
@@ -90,6 +101,8 @@ function init() {
     controls = new THREE.OrbitControls(camera, canvas);
     controls.rotateSpeed = 0.4;
     controls.zoomSpeed = 1;
+    //Disable right click movement to center pixel co-ords
+    controls.enablePan = false;
     controls.addEventListener('change', render, renderer.domElement);
     controls.update();
 }
@@ -121,33 +134,6 @@ function createScene() {
     // grid.position.y = 5;
     scene.add(grid);
 
-    // var gridGeometry = new THREE.PlaneBufferGeometry(80, 80, 10, 10);
-    // gridGeometry.rotateY(Math.PI);
-    // gridGeometry.rotateX(-Math.PI * 0.5);
-    // var gridMaterial = new THREE.MeshBasicMaterial({
-    //     color: "black",
-    //     wireframe: true
-    // });
-    // gridWithDiagonals = new THREE.Mesh(gridGeometry, gridMaterial);
-    // gridWithDiagonals.position.y = -5;
-    // scene.add(gridWithDiagonals);
-
-    // var gridGeometry2 = new THREE.PlaneBufferGeometry(80, 80, 10, 10);
-    // gridGeometry2.rotateY(Math.PI);
-    // gridGeometry2.rotateX(-Math.PI * -0.5);
-    // var gridMaterial2 = new THREE.MeshBasicMaterial({
-    //     color: "red",
-    //     wireframe: true
-    // });
-    // gridWithDiagonals2 = new THREE.Mesh(gridGeometry2, gridMaterial2);
-    // gridWithDiagonals2.position.y = -0.02;
-    // scene.add(gridWithDiagonals2);
-
-    // var geometry = new THREE.BoxBufferGeometry(100, 100, 100);
-    // var edges = new THREE.EdgesGeometry(geometry);
-    // var line = new THREE.LineSegments(edges, new THREE.LineBasicMaterial({ color: 0xffffff }));
-    // scene.add(line);
-
     targetForDragging = new THREE.Mesh(
         new THREE.BoxGeometry(80, 0.1, 80),
         new THREE.MeshBasicMaterial()
@@ -168,6 +154,7 @@ function createScene() {
     cube = new THREE.Mesh(geometry2, material);
     cube.position.y = 0.01;
 
+    //Geometry for home
     var geometry5 = new THREE.BoxGeometry(3, 0.8, 3);
     var material4 = new THREE.MeshBasicMaterial({ color: "red" });
     home = new THREE.Mesh(geometry5, material4);
@@ -175,12 +162,13 @@ function createScene() {
 
     var col_gray = new THREE.Color("rgb(128, 128, 128)");
 
-    var geometry3 = new THREE.BoxGeometry(0.8, 1, 7);
+    //Geometry for path
+    var geometry3 = new THREE.BoxGeometry(0.5, 1, 7);
     var material2 = new THREE.MeshBasicMaterial({ color: col_gray });
     line_vert = new THREE.Mesh(geometry3, material2);
     line_vert.position.y = 0.01;
 
-    var geometry4 = new THREE.BoxGeometry(7, 1, 0.8);
+    var geometry4 = new THREE.BoxGeometry(7, 1, 0.5);
     var material3 = new THREE.MeshBasicMaterial({ color: col_gray });
     line_hor = new THREE.Mesh(geometry4, material3);
     line_hor.position.y = 0.01;
@@ -226,12 +214,9 @@ function doMouseDown(x, y) {
     if (mouseAction == ROTATE) {
         return true;
     }
-
-
     // Affecting drag function
     if (targetForDragging.parent == scene) {
         scene.remove(targetForDragging); // I don't want to check for hits on targetForDragging
-
     }
 
     var a = 2 * x / canvas.width - 1;
@@ -258,7 +243,6 @@ function doMouseDown(x, y) {
                 return true;
             }
         case ADD_NODE:
-
             if (objectHit == grid || objectHit == gridWithDiagonals2) {
 
                 var locationX = intersect.point.x; // Gives the point of intersection in world coords
@@ -268,7 +252,6 @@ function doMouseDown(x, y) {
                 console.log("Node at: " + xCord, yCord);
                 render();
             }
-
             return false;
         case ADD_MACHINE:
             if (objectHit == grid || objectHit == gridWithDiagonals2) {
@@ -283,32 +266,16 @@ function doMouseDown(x, y) {
             return false;
         case ADD_HOME:
             if (objectHit == grid || objectHit == gridWithDiagonals2) {
-
                 var locationX5 = intersect.point.x; // Gives the point of intersection in world coords
                 var locationZ5 = intersect.point.z;
                 coords_home = new THREE.Vector3(locationX5, 0, locationZ5);
                 addHome(coords_home.x, coords_home.z);
                 console.log("Home at: " + xCord, yCord);
-
-                canvas.addEventListener('mousemove', function(evt) {
-                    CheckMovement = setTimeout(function() {
-                        HasMouseStopped(evt);
-                    }, 1000);
-                }, true);
-
-                var mousePos = getMousePos(canvas, evt);
-
-                var rect = canvas.getBoundingClientRect();
-                xCordHome = evt.clientX - rect.left;
-                yCordHome = evt.clientY - rect.top;
-                console.log(xCordHome, yCordHome);
-
                 render();
             }
             return false;
         case ADD_LINE:
             if (objectHit == grid || objectHit == gridWithDiagonals2) {
-
                 var locationX2 = intersect.point.x; // Gives the point of intersection in world coords
                 var locationZ2 = intersect.point.z;
                 var coords2 = new THREE.Vector3(locationX2, 0, locationZ2);
@@ -318,36 +285,18 @@ function doMouseDown(x, y) {
             return false;
         case ADD_LINE_HOR:
             if (objectHit == grid) {
-
                 var locationX3 = intersect.point.x; // Gives the point of intersection in world coords
                 var locationZ3 = intersect.point.z;
                 var coords3 = new THREE.Vector3(locationX3, 0, locationZ3);
                 addLineHor(coords3.x, coords3.z);
-
                 render();
             }
             return false;
-        case GET_IMAGE:
+        // case GET_IMAGE:
+        //     if (objectHit == grid) {
 
-            const fs = require('fs');
-            const jpeg = require('jpeg-js');
-            const PathFromImage = require('path-from-image');
-
-            const redPointCoords = [750, 250];
-            const bluePointCoords = [750, 342];
-
-            const image = jpeg.decode(fs.readFileSync('Images/PathPlanner1.jpg'), true);
-            const pathFromImage = new PathFromImage({
-                width: image.width,
-                height: image.height,
-                imageData: image.data,
-                colorPatterns: [{ r: [60, 128], g: [0, 128], b: [60, 128] }], // description of the mauve / ping color
-            });
-            const path = pathFromImage.path(redPointCoords, bluePointCoords); // => [[62, 413], [63, 406], [69, 390], ...]
-            console.log(path);
-
-            return false;
-
+        //     }
+        //     return false;
         default: // DELETE
             if (objectHit != gridWithDiagonals2) {
                 if (objectHit != grid) {
@@ -364,26 +313,25 @@ function doMouseMove(x, y, evt, prevX, prevY) {
 
     if (mouseAction == ROTATE) {
 
-
     } else { // drag
 
-        var a = 2 * x / canvas.width - 1;
-        var b = 1 - 2 * y / canvas.height;
-        raycaster.setFromCamera(new THREE.Vector2(a, b), camera);
-        intersects = raycaster.intersectObject(targetForDragging);
-        if (intersects.length == 0) {
-            return;
-        }
-        var locationX = intersects[0].point.x;
-        var locationZ = intersects[0].point.z;
-        var coords = new THREE.Vector3(locationX, 0, locationZ);
-        scene.worldToLocal(coords);
+        // var a = 2 * x / canvas.width - 1;
+        // var b = 1 - 2 * y / canvas.height;
+        // raycaster.setFromCamera(new THREE.Vector2(a, b), camera);
+        // intersects = raycaster.intersectObject(targetForDragging);
+        // if (intersects.length == 0) {
+        //     return;
+        // }
+        // var locationX = intersects[0].point.x;
+        // var locationZ = intersects[0].point.z;
+        // var coords = new THREE.Vector3(locationX, 0, locationZ);
+        // scene.worldToLocal(coords);
 
-        //Clamping cylinders to ground when being dragged. This depends on size of grid
-        a = Math.min(39, Math.max(-39, coords.x));
-        b = Math.min(39, Math.max(-39, coords.z));
-        dragItem.position.set(a, 0, b);
-        render();
+        // //Clamping cylinders to ground when being dragged. This depends on size of grid
+        // a = Math.min(39, Math.max(-39, coords.x));
+        // b = Math.min(39, Math.max(-39, coords.z));
+        // dragItem.position.set(a, 0, b);
+        // render();
     }
 }
 
@@ -414,13 +362,14 @@ function doChangeMouseAction() {
     } else if (document.getElementById("mouseAddHome").checked) {
         mouseAction = ADD_HOME;
         controls.enableRotate = false;
-    } else if (document.getElementById("mouseImage").checked) {
-        mouseAction = GET_IMAGE;
-        controls.enableRotate = false;
-    } else {
+    } 
+    // else if (document.getElementById("mouseImage").checked) {
+    //     mouseAction = GET_IMAGE;
+    //     controls.enableRotate = false;
+    // } 
+    else {
         mouseAction = DELETE;
         controls.enableRotate = false;
-
     }
 }
 window.requestAnimationFrame =
