@@ -16,29 +16,24 @@
         <body onload="init()">
             <p><b>Mouse Action:</b></p>
             <ul>
-                <li>
-                    <div class="button">
-                        <!-- <button class="btn" type="submit">Submit!</button> -->
-                        <button class="btn" id="findPath" onclick="findPath()">Find Path</button>
-                    </div>
-                </li>
+
                 <li>
                     <input type="radio" id="mouseRotate" name="selector">
                     <label for="mouseRotate">Rotate</label>
                     <div class="check"></div>
                 </li>
 
-                <li>
+                <!-- <li>
                     <input type="radio" name="selector" id="mouseDrag">
                     <label for="mouseDrag">Drag</label>
                     <div class="check">
                         <div class="inside"></div>
                     </div>
-                </li>
+                </li> -->
 
                 <li>
                     <input type="radio" id="mouseAddHome" name="selector">
-                    <label for="mouseAddHome">Add Home</label>
+                    <label for="mouseAddHome">AddHome</label>
                     <div class="check">
                         <div class="inside"></div>
                     </div>
@@ -46,7 +41,7 @@
 
                 <li>
                     <input type="radio" id="mouseAdd" name="selector">
-                    <label for="mouseAdd">Add Node</label>
+                    <label for="mouseAdd">AddNode</label>
                     <div class="check">
                         <div class="inside"></div>
                     </div>
@@ -54,21 +49,21 @@
 
                 <li>
                     <input type="radio" id="mouseAddMachine" name="selector">
-                    <label for="mouseAddMachine">Add Machine</label>
+                    <label for="mouseAddMachine">AddMachine</label>
                     <div class="check">
                         <div class="inside"></div>
                     </div>
                 </li>
                 <li>
                     <input type="radio" id="mouseAddLine" name="selector">
-                    <label for="mouseAddLine">Add Line Vert</label>
+                    <label for="mouseAddLine">AddLine Vert</label>
                     <div class="check">
                         <div class="inside"></div>
                     </div>
                 </li>
                 <li>
                     <input type="radio" id="mouseAddLineHor" name="selector">
-                    <label for="mouseAddLineHor">Add Line Hor</label>
+                    <label for="mouseAddLineHor">AddLine Hor</label>
                     <div class="check">
                         <div class="inside"></div>
                     </div>
@@ -82,13 +77,18 @@
                     </div>
                 </li>
                 <li>
-                    <div class="button">
+                    <div class="button1">
                         <!-- <button class="btn" type="submit">Submit!</button> -->
                         <a id="download" download="PathPlanner.jpg">Download as image</a>
                     </div>
                 </li>
-
-            </ul> -->
+                <li>
+                    <div class="button">
+                        <!-- <button class="btn" type="submit">Submit!</button> -->
+                        <button class="btn" id="findPath" onclick="findPath()">Find Path</button>
+                    </div>
+                </li>
+            </ul>
 
             <p id="canvasP" align="center">
                 <div id="canvas-holder">

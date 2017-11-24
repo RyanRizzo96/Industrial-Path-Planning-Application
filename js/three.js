@@ -83,7 +83,7 @@ function init() {
     document.getElementById("mouseRotate").checked = true;
     mouseAction = ROTATE;
     document.getElementById("mouseRotate").onchange = doChangeMouseAction;
-    document.getElementById("mouseDrag").onchange = doChangeMouseAction;
+    // document.getElementById("mouseDrag").onchange = doChangeMouseAction;
     document.getElementById("mouseAdd").onchange = doChangeMouseAction;
     document.getElementById("mouseAddHome").onchange = doChangeMouseAction;
     document.getElementById("mouseAddMachine").onchange = doChangeMouseAction;
@@ -232,16 +232,16 @@ function doMouseDown(x, y) {
     var objectHit = intersect.object;
 
     switch (mouseAction) {
-        case DRAG:
-            if (objectHit == grid) {
-                return false;
-            } else {
-                dragItem = objectHit;
-                scene.add(targetForDragging);
-                targetForDragging.position.set(0, intersect.point.y, 0);
-                render();
-                return true;
-            }
+        // case DRAG:
+        //     if (objectHit == grid) {
+        //         return false;
+        //     } else {
+        //         dragItem = objectHit;
+        //         scene.add(targetForDragging);
+        //         targetForDragging.position.set(0, intersect.point.y, 0);
+        //         render();
+        //         return true;
+        //     }
         case ADD_NODE:
             if (objectHit == grid || objectHit == gridWithDiagonals2) {
 
@@ -292,11 +292,11 @@ function doMouseDown(x, y) {
                 render();
             }
             return false;
-        // case GET_IMAGE:
-        //     if (objectHit == grid) {
+            // case GET_IMAGE:
+            //     if (objectHit == grid) {
 
-        //     }
-        //     return false;
+            //     }
+            //     return false;
         default: // DELETE
             if (objectHit != gridWithDiagonals2) {
                 if (objectHit != grid) {
@@ -340,11 +340,13 @@ function doChangeMouseAction() {
         mouseAction = ROTATE;
         controls.enableRotate = true;
 
-    } else if (document.getElementById("mouseDrag").checked) {
-        mouseAction = DRAG;
-        controls.enableRotate = false;
+    }
+    // else if (document.getElementById("mouseDrag").checked) {
+    //     mouseAction = DRAG;
+    //     controls.enableRotate = false;
 
-    } else if (document.getElementById("mouseAdd").checked) {
+    // } 
+    else if (document.getElementById("mouseAdd").checked) {
         mouseAction = ADD_NODE;
         controls.enableRotate = false;
 
@@ -362,7 +364,7 @@ function doChangeMouseAction() {
     } else if (document.getElementById("mouseAddHome").checked) {
         mouseAction = ADD_HOME;
         controls.enableRotate = false;
-    } 
+    }
     // else if (document.getElementById("mouseImage").checked) {
     //     mouseAction = GET_IMAGE;
     //     controls.enableRotate = false;
