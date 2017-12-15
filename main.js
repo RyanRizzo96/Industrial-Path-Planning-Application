@@ -15,7 +15,7 @@ require('electron-reload')(__dirname);
 let mainWindow;
 
 function createWindow() {
-    // Create the browser window.
+    // Create the browser window
     mainWindow = new BrowserWindow({ width: 1200, height: 1000, icon: '../angular-electron-master/MCAST2.png' });
 
     // Setting up of icon image
@@ -27,9 +27,6 @@ function createWindow() {
         protocol: 'file:',
         slashes: true
     }));
-
-    // Open the DevTools.
-    // mainWindow.webContents.openDevTools()
 
     // Emitted when the window is closed.
     mainWindow.on('closed', function() {

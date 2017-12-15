@@ -30,10 +30,10 @@ function findPath() {
     // const startCoords = [xCordHome, yCordHome];
     // const finishCoords = [xCordMachine, yCordMachine];
 
-    const startCoords = [677, 344];
-    const finishCoords = [877, 130];
+    const startCoords = [751, 420];
+    const finishCoords = [876, 300];
 
-    const image = jpeg.decode(fs.readFileSync('Images/PathPlanner.jpg'), true);
+    const image = jpeg.decode(fs.readFileSync('Images/PathPlannerYY.jpg'), true);
     const pathFromImage = new PathFromImage({
         width: image.width,
         height: image.height,
@@ -41,7 +41,105 @@ function findPath() {
         colorPatterns: [{ r: [60, 75], g: [0, 0], b: [60, 130] }], // description of the mauve / ping color
     });
     const path = pathFromImage.path(startCoords, finishCoords); // => [[62, 413], [63, 406], [69, 390], ...]
-    console.log(path);
+    var i = 0;
+    var xChanged = false;
+    var yChanged = false;
+    var x = 0;
+    var y = 1;
+    var directionR = false;
+    var directionL = false;
+
+    console.log(path.length);
+    //console.log(path);
+    while (i < path.length) {
+        console.log(path[i]);
+        // console.log(path[i][x]);
+        // console.log(path[i][y]);
+        i++;
+    }
+    i = 0;
+
+    start:
+        while (i < path.length + 1) {
+            var changeX = path[i][0] - path[i + 1][0];
+            var changeY = path[i][1] - path[i + 1][1];
+
+            if (yChanged == false && xChanged == false && (changeY > 15 || changeY < 15)) {
+                console.log('Forward');
+                yChanged = true;
+                xChanged = false;
+                console.log(i);
+                i++;
+                continue start;
+            }
+            //i++;
+
+            if (yChanged == true && xChanged == false && (changeX > 20 || changeX < -20)) {
+                if (changeX > 20) {
+                    console.log('Left');
+                    console.log(i);
+                    console.log('Forward');
+                    directionL = true;
+                    i++;
+                } else if (changeX < -20) {
+                    console.log('Right');
+                    console.log(i);
+                    console.log('Forward');
+                    directionR = true;
+                    i++;
+                }
+                xChanged = true;
+                yChanged = false;
+                console.log(i);
+                i++;
+                continue start;
+            }
+
+            if (directionR == true && xChanged == true && yChanged == false && (changeY > 20 || changeY < -20)) {
+                if (changeY > 20) {
+                    console.log('Left');
+                    console.log(i);
+                    console.log('Forward');
+                    i++;
+                } else if (changeY < -20) {
+                    console.log('Right');
+                    console.log(i);
+                    console.log('Forward');
+                    i++;
+                }
+                yChanged = true;
+                xChanged = false;
+                console.log(i);
+                i++;
+                directionR = false;
+                continue start;
+            }
+
+
+            if (directionL == true && xChanged == true && yChanged == false && (changeY > 20 || changeY < -20)) {
+                if (changeY > 20) {
+                    console.log('Right');
+                    console.log(i);
+                    console.log('Forward');
+                    i++;
+                } else if (changeY < -20) {
+                    console.log('Left');
+                    console.log(i);
+                    console.log('Forward');
+                    i++;
+                }
+                yChanged = true;
+                xChanged = false;
+                console.log(i);
+                directionL = false;
+                i++;
+                continue start;
+            }
+            //i++;
+
+
+        }
+
 }
 
 //Function to downlaod image to user workspace
@@ -79,7 +177,7 @@ function init() {
         // Math.round to get rid of long decimal place
         xCordMachine = Math.round((evt.clientX - rect.left) / (rect.right - rect.left) * canvas.width);
         yCordMachine = Math.round((evt.clientY - rect.top) / (rect.bottom - rect.top) * canvas.height);
-        console.log('x: ' + xCordMachine + ' y: ' + yCordMachine);
+        // console.log('x: ' + xCordMachine + ' y: ' + yCordMachine);
         xCordHome = Math.round((evt.clientX - rect.left) / (rect.right - rect.left) * canvas.width);
         yCordHome = Math.round((evt.clientY - rect.top) / (rect.bottom - rect.top) * canvas.height);
     }
@@ -87,7 +185,7 @@ function init() {
 
     // document.getElementById("mouseRotate").checked = true;
     // mouseAction = ROTATE;
-    // document.getElementById("mouseRotate").onchange = doChangeMouseAction;
+    //document.getElementById("mouseRotate").onchange = doChangeMouseAction;
     // document.getElementById("mouseDrag").onchange = doChangeMouseAction;
     document.getElementById("mouseAdd").onchange = doChangeMouseAction;
     document.getElementById("mouseAddHome").checked = true;
@@ -106,6 +204,7 @@ function init() {
     render();
 
     // controls = new THREE.OrbitControls(camera, canvas);
+    // controls.enableRotate = true;
     // controls.rotateSpeed = 0.4;
     // controls.zoomSpeed = 1;
     // //Disable right click movement to center pixel co-ords
@@ -137,7 +236,7 @@ function createScene() {
     scene.add(new THREE.DirectionalLight(0xffffff, 0.5)); // light shining from above.
 
     //if grid size is changed, make sure to change clamping co-ords
-    grid = new THREE.GridHelper(80, 10, 0x0000f0, 0x000000);
+    grid = new THREE.GridHelper(100, 10, 0x000000, 0x000000);
     // grid.position.y = 5;
     scene.add(grid);
 
@@ -168,6 +267,7 @@ function createScene() {
     home.position.y = 0.01;
 
     var col_gray = new THREE.Color("rgb(75, 0, 130)");
+    // var col_gray = new THREE.Color("rgb(75, 0, 130)");
 
     //Geometry for path
     var geometry3 = new THREE.BoxGeometry(1, 1, 7);
@@ -272,6 +372,7 @@ function doMouseDown(x, y) {
             }
             return false;
         case ADD_HOME:
+            // controls.enableRotate = false;
             if (objectHit == grid || objectHit == gridWithDiagonals2) {
                 var locationX5 = intersect.point.x; // Gives the point of intersection in world coords
                 var locationZ5 = intersect.point.z;
@@ -343,9 +444,10 @@ function doMouseMove(x, y, evt, prevX, prevY) {
 }
 
 function doChangeMouseAction() {
-    // if (document.getElementById("mouseRotate").checked) {
-    //     mouseAction = ROTATE;
-    // }
+    //  if (document.getElementById("mouseRotate").checked) {
+    // mouseAction = ROTATE;
+    // controls.enableRotate = true;
+    //  }
     // else if (document.getElementById("mouseDrag").checked) {
     //     mouseAction = DRAG;
     //     controls.enableRotate = false;
@@ -353,13 +455,18 @@ function doChangeMouseAction() {
     // } 
     if (document.getElementById("mouseAdd").checked) {
         mouseAction = ADD_NODE;
+        //  controls.enableRotate = false;
     } else if (document.getElementById("mouseAddMachine").checked) {
         mouseAction = ADD_MACHINE;
+        //  controls.enableRotate = false;
     } else if (document.getElementById("mouseAddLine").checked) {
         mouseAction = ADD_LINE;
+        //  controls.enableRotate = false;
     } else if (document.getElementById("mouseAddLineHor").checked) {
         mouseAction = ADD_LINE_HOR;
+        // controls.enableRotate = false;
     } else if (document.getElementById("mouseAddHome").checked) {
+        //  controls.enableRotate = false;
         mouseAction = ADD_HOME;
     }
     // else if (document.getElementById("mouseImage").checked) {
@@ -368,7 +475,7 @@ function doChangeMouseAction() {
     // } 
     else {
         mouseAction = DELETE;
-        // controls.enableRotate = false;
+        //   controls.enableRotate = false;
     }
 }
 window.requestAnimationFrame =
