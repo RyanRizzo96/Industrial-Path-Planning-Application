@@ -2,7 +2,8 @@ var canvas, scene, renderer, camera, controls;
 var gridWithDiagonals, gridWithDiagonals2, grid, raycaster, locationX, locationZ;
 var line_vert, line_hor, home, scene, cylinder, ground;
 var ROTATE = 1,
-    DRAG = 2,
+    DRAG= 12;
+    SELECT_FINISH = 2,
     ADD_NODE = 3,
     DELETE = 4,
     ADD_MACHINE = 5,
@@ -61,18 +62,6 @@ function storeDataMachine() {
      
 }
 
-function readCoords() {
-    var lineReader = require('line-reader');
-
-    lineReader.eachLine('file.txt', function(line, last) {
-        console.log(line);
-      
-        if (line == 2) {
-          return false; // stop reading
-        }
-      });
-}
-
 
 //Function to find shortest path
 function findPath() {
@@ -80,16 +69,16 @@ function findPath() {
     const jpeg = require('jpeg-js');
     const PathFromImage = require('path-from-image');
 
-    //readCoords();
-    //startCoords =
+    //Path PlannerYY  (6 machines) (580|165, 250, 338) (840|164, 251, 338)
+    //Path PlannerYYM (6 machines) (580|180, 250, 334) (925|164, 248, 336)
+ 
+    const startCoords = [752, 421]; //[628, 312];    [628, 124];  [751, 420];/[876, 248];
+    const finishCoords = [580, 180];
 
     console.log("Starting Point: " + startCoords);
     console.log("Finishing Point: " + finishCoords);
 
-    // const startCoords = [751, 420]; //[628, 312];    [628, 124];
-    // const finishCoords = [876, 248];
-
-    const image = jpeg.decode(fs.readFileSync('Images/newL2.jpg'), true);
+    const image = jpeg.decode(fs.readFileSync('/Users/ryanr/Desktop/MCAST Degree 2/6. Engineering Project (1 - 2)/Pathfinder Images/PathPlannerYYM.jpg'), true);
     const pathFromImage = new PathFromImage({
         width: image.width,
         height: image.height,
@@ -106,120 +95,125 @@ function findPath() {
     var directionR = false;
     var directionL = false;
 
+
     console.log(path.length);
     //console.log(path);
     while (i < path.length) {
         console.log(path[i]);
-        // console.log(path[i][x]);
-        // console.log(path[i][y]);
         i++;
     }
     i = 0;
 
     start:
-        while (i < path.length -1 ) {
-            var changeX = path[i][0] - path[i + 1][0];
-            var changeY = path[i][1] - path[i + 1][1];
-
-            if (yChanged == false && xChanged == false && (changeY > 15 || changeY < 15)) {
-                console.log('Forward');
+        for (i = 0; i < path.length-1; i++) {
+            var changeX = path[i + 1][0] - path[i][0];
+            var changeY = path[i + 1][1] - path[i][1];
+            
+            //Robot in Start position
+            if ((yChanged == false && xChanged == false) && (changeY < -15)){
+                console.log(i);
+                console.log('Forward 0');
                 yChanged = true;
                 xChanged = false;
-                console.log(i);
-                i++;
                 continue start;
             }
-            //i++;
 
-            if (yChanged == true && xChanged == false && (changeX > 20 || changeX < -20)) {
-                if (changeX > 20) {
-                    console.log('Left');
+            //Robot turns either left or right
+            if (yChanged == true && xChanged == false){
+                //Robot turns right
+                if(changeX > 15) {
                     console.log(i);
-                    console.log('Forward');
-                    directionL = true;
-                    i++;
-                } else if (changeX < -20) {
-                    console.log('Right');
-                    console.log(i);
-                    console.log('Forward');
+                    console.log('Right 1');
+                    yChanged = false;
+                    xChanged = true;
                     directionR = true;
-                    i++;
+                    //Moving Robot Forward, incrementing step
+                    if (directionR == true && changeX > 10) {
+                        i++;
+                        console.log(i);
+                        console.log('Forward 1');                    
+                        continue start;
+                    }
                 }
-                xChanged = true;
-                yChanged = false;
-                console.log(i);
-                i++;
-                continue start;
-            }
-
-            if (directionR == true && xChanged == true && yChanged == false && (changeY > 20 || changeY < -20)) {
-                if (changeY > 20) {
-                    console.log('Left');
+                //Robot turns left
+                else if(changeX < -15) {
                     console.log(i);
-                    console.log('Forward');
-                    i++;
-                } else if (changeY < -20) {
-                    console.log('Right');
-                    console.log(i);
-                    console.log('Forward');
-                    i++;
+                    console.log('Left 1');
+                    yChanged = false;
+                    xChanged = true;
+                    directionL = true;
+                    //Moving Robot Forward, incrementing step
+                    if (directionL == true && changeX < -10) {
+                       // i++;
+                        console.log(i);
+                        console.log('Forward 1');
+                        continue start;
                 }
-                yChanged = true;
-                xChanged = false;
-                console.log(i);
-                i++;
-                directionR = false;
-                continue start;
             }
-
-
-            if (directionL == true && xChanged == true && yChanged == false && (changeY > 20 || changeY < -20)) {
-                if (changeY > 20) {
-                    console.log('Right');
-                    console.log(i);
-                    console.log('Forward');
-                    i++;
-                } else if (changeY < -20) {
-                    console.log('Left');
-                    console.log(i);
-                    console.log('Forward');
-                    i++;
-                }
-                yChanged = true;
-                xChanged = false;
-                console.log(i);
-                directionL = false;
-                i++;
-                continue start;
-            }
-            //i++;
-
-
         }
-
+        //If robot has just finished move along x-axis
+        //Detecting change in y-axis
+        if(xChanged == true && yChanged == false) {
+            //Robot moving to right must turn left and upwards
+            if (directionR == true && changeY < -15) {
+                console.log(i);
+                console.log('Left 2');
+                //Moving robot Forward
+                if (directionR == true && changeY < -15) {
+                    i++;
+                    console.log(i);
+                    console.log('Forward 2'); 
+                    if (changeY < -100){
+                        console.log(i);
+                        console.log('Forward 2');  
+                    }
+                    yChanged = true;
+                    xChanged = false;
+                    dirctionL = false;
+                    continue start;
+                }
+            }
+            //Robot moving to left must turn right and upwards
+            if (directionL == true && changeY < -15) {
+                console.log(i);
+                console.log('Right 2');
+                //Moving Robot Forward
+                if (directionL == true && changeY < -15) {
+                //    i++;
+                    console.log(i);
+                    console.log('Forward 2'); 
+                    if (changeY < -100){
+                        console.log(i);
+                        console.log('Forward 2');  
+                    }
+                    yChanged = true;
+                    xChanged = false;
+                    dirctionR = false;
+                    continue start;
+                }
+           }
+        }
+     console.log('Passing here'+ i);
+    }
 }
 
-//Function to downlaod image to user workspace
+function arrangeCanvas(){
+    // controls.enableRotate = false;
+    // controls.enableZoom = false;
+    // controls.enablePan = false;
+    camera = new THREE.PerspectiveCamera(60, canvas.width / canvas.height, 1, 10000);
+    camera.position.z = 0;
+    camera.position.y = 50;
+    camera.lookAt(new THREE.Vector3(0, 1, 0));
+}
+//document.getElementById('arrangeCanvas').addEventListener('click', arrangeCanvas, false);
 
+//Function to downlaod image to user workspace
 function download() {
     var dt = canvas.toDataURL('image/jpeg');
     this.href = dt;
 }
 document.getElementById('download').addEventListener('click', download, false);
-
-// function download() {
-//     var download = document.getElementById('download');
-//     download.setAttribute('href', 'image/jpeg,');
-//     download.setAttribute('download', 'file.jpg');
-// }
-// document.getElementById('download').addEventListener('click', download, false);
-
-// function download() {
-//     event.currentTarget.href = canvas.toDataURL('image/jpeg');
-// }
-// document.getElementById('download').addEventListener('click', download, false);
-
-
 
 //Function to initialise canvas and scene
 function init() {
@@ -249,7 +243,8 @@ function init() {
         // Math.round to get rid of long decimal place
         xCordMouse = Math.round((evt.clientX - rect.left) / (rect.right - rect.left) * canvas.width);
         yCordMouse = Math.round((evt.clientY - rect.top) / (rect.bottom - rect.top) * canvas.height);
-        console.log('x: ' + xCordMouse + ' y: ' + yCordMouse);
+      // console.log('x: ' + xCordMouse + ' y: ' + yCordMouse);
+
     }
 
 
@@ -257,14 +252,16 @@ function init() {
     // mouseAction = ROTATE;
     //document.getElementById("mouseRotate").onchange = doChangeMouseAction;
     // document.getElementById("mouseDrag").onchange = doChangeMouseAction;
-    document.getElementById("mouseAdd").onchange = doChangeMouseAction;
+    
     document.getElementById("mouseAddHome").checked = true;
     mouseAction = ADD_HOME;
     document.getElementById("mouseAddHome").onchange = doChangeMouseAction;
+    document.getElementById("mouseRotate").onchange = doChangeMouseAction;
     document.getElementById("mouseAddMachine").onchange = doChangeMouseAction;
     document.getElementById("mouseAddLine").onchange = doChangeMouseAction;
     document.getElementById("mouseAddLineHor").onchange = doChangeMouseAction;
     document.getElementById("mouseDelete").onchange = doChangeMouseAction;
+    document.getElementById("mouseSelectFinish").onchange = doChangeMouseAction;
     // document.getElementById("mouseImage").onchange = doChangeMouseAction;
     createScene();
 
@@ -273,14 +270,15 @@ function init() {
     raycaster = new THREE.Raycaster();
     render();
 
-    // controls = new THREE.OrbitControls(camera, canvas);
-    // controls.enableRotate = true;
-    // controls.rotateSpeed = 0.4;
-    // controls.zoomSpeed = 1;
-    // //Disable right click movement to center pixel co-ords
-    // controls.enablePan = false;
-    // controls.addEventListener('change', render, renderer.domElement);
-    // controls.update();
+    controls = new THREE.OrbitControls(camera, canvas);
+    controls.enableRotate = false;
+    controls.enableZoom = false;
+    controls.rotateSpeed = 0.3;
+    controls.zoomSpeed = 1;
+    //Disable right click movement to center pixel co-ords
+    controls.enablePan = false;
+    controls.addEventListener('change', render, renderer.domElement);
+    controls.update();
 }
 
 // loop that causes the renderer to draw the scene 60 times per second.
@@ -294,7 +292,7 @@ function createScene() {
     // First parameter is FOV in degrees. Second: Aspect ratio. Third/Fourth: Near/Far clipping plane
     camera = new THREE.PerspectiveCamera(60, canvas.width / canvas.height, 1, 10000);
     camera.position.z = 0;
-    camera.position.y = 70;
+    camera.position.y = 50;
 
     /**Creating the scene */
     scene = new THREE.Scene();
@@ -311,11 +309,11 @@ function createScene() {
     scene.add(grid);
 
     targetForDragging = new THREE.Mesh(
-        new THREE.BoxGeometry(80, 0.1, 80),
-        new THREE.MeshBasicMaterial()
+        new THREE.BoxGeometry(20, 25, 20),
+        new THREE.MeshBasicMaterial({ color: "red" })
     );
 
-    targetForDragging.material.visible = false;
+    targetForDragging.material.visible = true;
 
     //Geometry for node
     cylinder = new THREE.Mesh(
@@ -325,13 +323,13 @@ function createScene() {
     cylinder.position.y = 0.01; // places base at y = 0;
 
     //Geometry for machine
-    var geometry2 = new THREE.BoxGeometry(3, 0.8, 3);
+    var geometry2 = new THREE.BoxGeometry(3, 0.6, 3);
     var material = new THREE.MeshBasicMaterial({ color: "blue" });
     cube = new THREE.Mesh(geometry2, material);
     cube.position.y = 0.01;
 
     //Geometry for home
-    var geometry5 = new THREE.BoxGeometry(3, 0.8, 3);
+    var geometry5 = new THREE.BoxGeometry(3, 0.6, 3);
     var material4 = new THREE.MeshBasicMaterial({ color: "red" });
     home = new THREE.Mesh(geometry5, material4);
     home.position.y = 0.01;
@@ -340,12 +338,12 @@ function createScene() {
     // var col_gray = new THREE.Color("rgb(75, 0, 130)");
 
     //Geometry for path
-    var geometry3 = new THREE.BoxGeometry(1, 1, 7);
+    var geometry3 = new THREE.BoxGeometry(0.8, 0.8, 6);
     var material2 = new THREE.MeshBasicMaterial({ color: col_gray });
     line_vert = new THREE.Mesh(geometry3, material2);
     line_vert.position.y = 0.01;
 
-    var geometry4 = new THREE.BoxGeometry(7, 1, 1);
+    var geometry4 = new THREE.BoxGeometry(6, 0.8, 0.8);
     var material3 = new THREE.MeshBasicMaterial({ color: col_gray });
     line_hor = new THREE.Mesh(geometry4, material3);
     line_hor.position.y = 0.01;
@@ -388,9 +386,9 @@ function addNode(x, z) {
 
 function doMouseDown(x, y) {
     //enable rotate
-    if (mouseAction == ROTATE) {
-        return true;
-    }
+    // if (mouseAction == ROTATE) {
+    //     return true;
+    // }
     // Affecting drag function
     if (targetForDragging.parent == scene) {
         scene.remove(targetForDragging); // I don't want to check for hits on targetForDragging
@@ -419,6 +417,22 @@ function doMouseDown(x, y) {
         //         render();
         //         return true;
         //     }
+        case ROTATE:
+            // if (mouseAction == ROTATE) {
+                console.log('ROTATE');
+                controls = new THREE.OrbitControls(camera, canvas);
+                controls.enableRotate = true;
+                controls.enableZoom = true;
+                controls.rotateSpeed = 0.2;
+                controls.zoomSpeed = 1;
+                controls.keyPanSpeed = 0.8;
+                //Disable right click movement to center pixel co-ords
+                controls.enablePan = true;
+                controls.addEventListener('change', render, renderer.domElement);
+                controls.update();
+           
+        return false;
+
         case ADD_NODE:
             if (objectHit == grid || objectHit == gridWithDiagonals2) {
 
@@ -476,8 +490,6 @@ function doMouseDown(x, y) {
 
                 storeDataHome();
                 render();
-                // store.set('start','');
-                // store.set('finish','');
 
             }
             return false;
@@ -499,12 +511,14 @@ function doMouseDown(x, y) {
                 render();
             }
             return false;
-            // case GET_IMAGE:
-            //     if (objectHit == grid) {
 
-            //     }
-            //     return false;
-        default: // DELETE
+        case SELECT_FINISH:
+            //Detecting where user wants robot to finish
+            finishCoords = [xCordMouse, yCordMouse];
+            console.log("Finish coords at " + finishCoords);
+            return false;
+
+        case DELETE:
             if (objectHit != gridWithDiagonals2) {
                 if (objectHit != grid) {
                     scene.remove(objectHit);
@@ -543,38 +557,30 @@ function doMouseMove(x, y, evt, prevX, prevY) {
 }
 
 function doChangeMouseAction() {
-    //  if (document.getElementById("mouseRotate").checked) {
-    // mouseAction = ROTATE;
-    // controls.enableRotate = true;
-    //  }
-    // else if (document.getElementById("mouseDrag").checked) {
-    //     mouseAction = DRAG;
-    //     controls.enableRotate = false;
-
-    // } 
-    if (document.getElementById("mouseAdd").checked) {
-        mouseAction = ADD_NODE;
-        //  controls.enableRotate = false;
-    } else if (document.getElementById("mouseAddMachine").checked) {
+     if (document.getElementById("mouseRotate").checked) {
+         console.log('ROTATE1');
+        mouseAction = ROTATE;
+    }
+    else if (document.getElementById("mouseAddMachine").checked) {
         mouseAction = ADD_MACHINE;
-        //  controls.enableRotate = false;
+          controls.enableRotate = false;
     } else if (document.getElementById("mouseAddLine").checked) {
         mouseAction = ADD_LINE;
-        //  controls.enableRotate = false;
+          controls.enableRotate = false;
     } else if (document.getElementById("mouseAddLineHor").checked) {
         mouseAction = ADD_LINE_HOR;
-        // controls.enableRotate = false;
+         controls.enableRotate = false;
     } else if (document.getElementById("mouseAddHome").checked) {
-        //  controls.enableRotate = false;
+          controls.enableRotate = false;
         mouseAction = ADD_HOME;
     }
-    // else if (document.getElementById("mouseImage").checked) {
-    //     mouseAction = GET_IMAGE;
-    //     controls.enableRotate = false;
-    // } 
-    else {
+    else if (document.getElementById("mouseSelectFinish").checked) {
+         controls.enableRotate = false;
+        mouseAction = SELECT_FINISH;
+    }
+    else if (document.getElementById("mouseDelete").checked) {
+          controls.enableRotate = false;
         mouseAction = DELETE;
-        //   controls.enableRotate = false;
     }
 }
 window.requestAnimationFrame =

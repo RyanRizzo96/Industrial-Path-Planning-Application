@@ -16,20 +16,15 @@
         <body onload="init()">
             <p><b>Mouse Action:</b></p>
             <ul>
-                <!--                 
+                                
+
                 <li>
                     <input type="radio" id="mouseRotate" name="selector">
                     <label for="mouseRotate">Rotate</label>
-                    <div class="check"></div>
-                </li>  -->
-
-                <!-- <li>
-                    <input type="radio" name="selector" id="mouseDrag">
-                    <label for="mouseDrag">Drag</label>
                     <div class="check">
                         <div class="inside"></div>
                     </div>
-                </li> -->
+                </li>
 
                 <li>
                     <input type="radio" id="mouseAddHome" name="selector">
@@ -40,16 +35,15 @@
                 </li>
 
                 <li>
-                    <input type="radio" id="mouseAdd" name="selector">
-                    <label for="mouseAdd">AddNode</label>
+                    <input type="radio" id="mouseAddMachine" name="selector">
+                    <label for="mouseAddMachine">AddMachine</label>
                     <div class="check">
                         <div class="inside"></div>
                     </div>
                 </li>
-
                 <li>
-                    <input type="radio" id="mouseAddMachine" name="selector">
-                    <label for="mouseAddMachine">AddMachine</label>
+                    <input type="radio" id="mouseSelectFinish" name="selector">
+                    <label for="mouseSelectFinish">Select Finish </label>
                     <div class="check">
                         <div class="inside"></div>
                     </div>
@@ -77,10 +71,22 @@
                     </div>
                 </li>
                 <li>
-                    <div class="button1">
-                         <a id="download" download="PathPlanner.jpg">Download JPG</a> 
+                        <div class="button1">
+                             <a id="upload" upload="PathPlanner.jpg">Upload JPG</a> 
+                        </div>
+                    </li>
+                <li>
+                    <div class="button">
+                        <!-- <button class="btn" type="submit">Submit!</button> -->
+                        <button class="btn" id="ArrangeCanvas" onclick="arrangeCanvas()">Arrange Canvas</button>
                     </div>
                 </li>
+                <li>
+                    <div class="button1">
+                        <a id="download" download="PathPlanner.jpg">Download JPG</a> 
+                    </div>
+                </li>
+                
                 <li>
                     <div class="button">
                         <!-- <button class="btn" type="submit">Submit!</button> -->

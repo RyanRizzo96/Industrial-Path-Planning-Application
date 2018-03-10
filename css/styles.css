@@ -137,8 +137,20 @@ input[type=radio]:checked~label {
     /* margin-right: 13px; */
 }
 
+#upload {
+    /* clear: both; */
+    /* float: left; */
+    cursor: pointer;
+    color: white;
+    /* margin-right: 13px; */
+}
+
 #download:hover {
     color: royalblue;
+}
+
+#upload:hover {
+    color: red;
 }
 
 .button {
