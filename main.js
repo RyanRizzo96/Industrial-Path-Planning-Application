@@ -4,6 +4,7 @@ const app = electron.app;
 // Module to create native browser window.
 const BrowserWindow = electron.BrowserWindow;
 
+//const {app} = require('electron');
 const path = require('path');
 const url = require('url');
 const { Tray } = require('electron'); // Setting up icon image
@@ -19,7 +20,7 @@ function createWindow() {
     mainWindow = new BrowserWindow({ width: 1200, height: 1000, icon: '../angular-electron-master/MCAST2.png' });
 
     // Setting up of icon image
-    const appIcon = new Tray('../angular-electron-master/MCAST2.png');
+    //const appIcon = new Tray('../angular-electron-master/MCAST2.png');
 
     // and load the index.html of the app.
     mainWindow.loadURL(url.format({

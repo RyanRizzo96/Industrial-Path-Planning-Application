@@ -133,12 +133,12 @@ input[type=radio]:checked~label {
     /* clear: both; */
     /* float: left; */
     cursor: pointer;
-    color: #ccc;
+    color: white;
     /* margin-right: 13px; */
 }
 
 #download:hover {
-    color: #fff;
+    color: royalblue;
 }
 
 .button {

@@ -19,7 +19,60 @@ var CheckMovement;
 var targetForDragging; // An invisible object that is used as the target for raycasting while dragging a cylinder.
 
 var xCordMachine, yCordMachine, xCordHome, yCordHome;
+var xCordMouse, yCordMouse, xCordMouse, yCordMouse;
 var coords_node, coords_machine, coords_home;
+var startCoords;
+var finishCoords;
+var myJSON_Home, myJSON_Machine; 
+
+function storeDataHome() {
+    //const {app} = require('electron')
+    var fs = require('graceful-fs')
+        
+    const storage = require('electron-json-storage');
+    const dataPath = storage.getDataPath();
+    console.log('Saving to: ' + dataPath);
+
+    fs.writeFile('/Users/ryanr/AppData/Roaming/electron-quick-start/storage', myJSON_Home  + "\r\n", (err) =>  {
+        //if error, catch
+        if (err) throw err;
+
+        //success case
+        console.log('Successful Home Coords' + myJSON_Home + 'Saved');
+    });
+    
+}
+
+function storeDataMachine() {
+    //const {app} = require('electron')
+    var fs = require('graceful-fs')
+        
+    const storage = require('electron-json-storage');
+    const dataPath = storage.getDataPath();
+    console.log('Saving to: ' + dataPath);
+
+    fs.appendFile('/Users/ryanr/AppData/Roaming/electron-quick-start/storage', myJSON_Machine, (err) =>  {
+        //if error, catch
+        if (err) throw err;
+
+        //success case
+        console.log('Successful Machine Coords' + myJSON_Machine + 'Saved' );
+    });
+     
+}
+
+function readCoords() {
+    var lineReader = require('line-reader');
+
+    lineReader.eachLine('file.txt', function(line, last) {
+        console.log(line);
+      
+        if (line == 2) {
+          return false; // stop reading
+        }
+      });
+}
+
 
 //Function to find shortest path
 function findPath() {
@@ -27,13 +80,16 @@ function findPath() {
     const jpeg = require('jpeg-js');
     const PathFromImage = require('path-from-image');
 
-    // const startCoords = [xCordHome, yCordHome];
-    // const finishCoords = [xCordMachine, yCordMachine];
+    //readCoords();
+    //startCoords =
 
-    const startCoords = [751, 420];
-    const finishCoords = [876, 300];
+    console.log("Starting Point: " + startCoords);
+    console.log("Finishing Point: " + finishCoords);
 
-    const image = jpeg.decode(fs.readFileSync('Images/PathPlannerYY.jpg'), true);
+    // const startCoords = [751, 420]; //[628, 312];    [628, 124];
+    // const finishCoords = [876, 248];
+
+    const image = jpeg.decode(fs.readFileSync('Images/newL2.jpg'), true);
     const pathFromImage = new PathFromImage({
         width: image.width,
         height: image.height,
@@ -41,6 +97,7 @@ function findPath() {
         colorPatterns: [{ r: [60, 75], g: [0, 0], b: [60, 130] }], // description of the mauve / ping color
     });
     const path = pathFromImage.path(startCoords, finishCoords); // => [[62, 413], [63, 406], [69, 390], ...]
+
     var i = 0;
     var xChanged = false;
     var yChanged = false;
@@ -60,7 +117,7 @@ function findPath() {
     i = 0;
 
     start:
-        while (i < path.length + 1) {
+        while (i < path.length -1 ) {
             var changeX = path[i][0] - path[i + 1][0];
             var changeY = path[i][1] - path[i + 1][1];
 
@@ -143,11 +200,26 @@ function findPath() {
 }
 
 //Function to downlaod image to user workspace
+
 function download() {
     var dt = canvas.toDataURL('image/jpeg');
     this.href = dt;
 }
 document.getElementById('download').addEventListener('click', download, false);
+
+// function download() {
+//     var download = document.getElementById('download');
+//     download.setAttribute('href', 'image/jpeg,');
+//     download.setAttribute('download', 'file.jpg');
+// }
+// document.getElementById('download').addEventListener('click', download, false);
+
+// function download() {
+//     event.currentTarget.href = canvas.toDataURL('image/jpeg');
+// }
+// document.getElementById('download').addEventListener('click', download, false);
+
+
 
 //Function to initialise canvas and scene
 function init() {
@@ -164,7 +236,7 @@ function init() {
     canvas.addEventListener('mousemove', function(evt) {
         CheckMovement = setTimeout(function() {
             HasMouseStopped(evt);
-        }, 2000);
+        }, 100);
     }, true);
 
     function HasMouseStopped(evt) {
@@ -175,11 +247,9 @@ function init() {
     function getMousePos(canvas, evt) {
         var rect = canvas.getBoundingClientRect();
         // Math.round to get rid of long decimal place
-        xCordMachine = Math.round((evt.clientX - rect.left) / (rect.right - rect.left) * canvas.width);
-        yCordMachine = Math.round((evt.clientY - rect.top) / (rect.bottom - rect.top) * canvas.height);
-        // console.log('x: ' + xCordMachine + ' y: ' + yCordMachine);
-        xCordHome = Math.round((evt.clientX - rect.left) / (rect.right - rect.left) * canvas.width);
-        yCordHome = Math.round((evt.clientY - rect.top) / (rect.bottom - rect.top) * canvas.height);
+        xCordMouse = Math.round((evt.clientX - rect.left) / (rect.right - rect.left) * canvas.width);
+        yCordMouse = Math.round((evt.clientY - rect.top) / (rect.bottom - rect.top) * canvas.height);
+        console.log('x: ' + xCordMouse + ' y: ' + yCordMouse);
     }
 
 
@@ -365,9 +435,22 @@ function doMouseDown(x, y) {
 
                 var locationX1 = intersect.point.x; // Gives the point of intersection in world coords
                 var locationZ1 = intersect.point.z;
+
+                //Adding Machine at point of intersection
                 coords_machine = new THREE.Vector3(locationX1, 0, locationZ1);
                 addMachine(coords_machine.x, coords_machine.z);
+                
+                //Saving co-ordinates of where machine is placed
+                xCordMachine = xCordMouse;
+                yCordMachine = yCordMouse;
+                finishCoords = [xCordMachine, yCordMachine];
                 console.log("Machine at: " + xCordMachine, yCordMachine);
+
+                //stringifying finsihCoords to send to "server"
+                myJSON_Machine= JSON.stringify(finishCoords);
+                console.log('JSON Machine coords: ' + myJSON_Machine);
+
+                storeDataMachine();
                 render();
             }
             return false;
@@ -376,10 +459,26 @@ function doMouseDown(x, y) {
             if (objectHit == grid || objectHit == gridWithDiagonals2) {
                 var locationX5 = intersect.point.x; // Gives the point of intersection in world coords
                 var locationZ5 = intersect.point.z;
+
+                //Adding Home at point of intersection
                 coords_home = new THREE.Vector3(locationX5, 0, locationZ5);
-                addHome(coords_home.x, coords_home.z);
+                addHome(coords_home.x, coords_home.z);             
+                
+                //Saving co-ordinates of where home is placed
+                xCordHome = xCordMouse;
+                yCordHome = yCordMouse;
+                startCoords = [xCordHome, yCordHome];              
                 console.log("Home at: " + xCordHome, yCordHome);
+
+                //stringifying finsihCoords to send to "server"
+                myJSON_Home = JSON.stringify(startCoords);
+                console.log('JSON Home coords: ' + myJSON_Home);
+
+                storeDataHome();
                 render();
+                // store.set('start','');
+                // store.set('finish','');
+
             }
             return false;
         case ADD_LINE:
