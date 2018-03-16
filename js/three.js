@@ -40,10 +40,10 @@ function connectBluetooth() {
             btSerial.connect(address, channel, function() {
                 console.log('Bluetooth Connected');
      
-                btSerial.write(new Buffer('my data', 'utf-8'), function(err, bytesWritten) {
-                    if (err) console.log(err);
-                    console.log('Sending data via Bluetooth');
-                });
+                // btSerial.write(new Buffer('my data', 'utf-8'), function(err, bytesWritten) {
+                //     if (err) console.log(err);
+                //     console.log('Sending data via Bluetooth');
+                // });
      
                 btSerial.on('data', function(buffer) {
                     console.log(buffer.toString('utf-8'));
