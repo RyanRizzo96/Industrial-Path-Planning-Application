@@ -161,6 +161,29 @@ input {
     color: white;
 }
 
+
+.form {
+   color: white;
+}
+input {
+    width: 100%;
+}
+input[type=text] {
+    width: 50%;
+    /* padding: 12px 20px;
+    margin: 8px 0; */
+    /* //box-sizing: border-box; */
+    color:black;
+}
+
+#upload {
+    padding : 0px;
+}
+
 input[type=file] {
-    cursor: pointer;
+    width: 50%;
+    /* padding: 12px 20px;
+    margin: 8px 0; */
+    /* //box-sizing: border-box; */
+    color:white
 }
