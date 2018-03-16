@@ -26,6 +26,46 @@ var startCoords;
 var finishCoords;
 var myJSON_Home, myJSON_Machine; 
 
+var myJSON;
+var BT_buffer;
+var command = [];
+var btSerial = new (require('bluetooth-serial-port')).BluetoothSerialPort();
+
+connectBluetooth();
+
+function connectBluetooth() {
+
+    btSerial.on('found', function(address, name) {
+        btSerial.findSerialPortChannel(address, function(channel) {
+            btSerial.connect(address, channel, function() {
+                console.log('Bluetooth Connected');
+     
+                btSerial.write(new Buffer('my data', 'utf-8'), function(err, bytesWritten) {
+                    if (err) console.log(err);
+                    console.log('Sending data via Bluetooth');
+                });
+     
+                btSerial.on('data', function(buffer) {
+                    console.log(buffer.toString('utf-8'));
+                    //console.log('connected2');
+                });
+            }, function () {
+                console.log('cannot connect');
+            });
+     
+            // close the connection when you're ready
+            btSerial.close();
+        }, 
+        
+        function() {
+            console.log('found nothing');
+        });
+    });
+  
+    btSerial.inquire();    
+}
+
+
 function storeDataHome() {
     //const {app} = require('electron')
     var fs = require('graceful-fs')
@@ -78,7 +118,7 @@ function findPath() {
     console.log("Starting Point: " + startCoords);
     console.log("Finishing Point: " + finishCoords);
 
-    const image = jpeg.decode(fs.readFileSync('/Users/ryanr/Desktop/MCAST Degree 2/6. Engineering Project (1 - 2)/Pathfinder Images/PathPlannerYYM.jpg'), true);
+    const image = jpeg.decode(fs.readFileSync('/Users/ryanr/OneDrive/Desktop/MCAST Degree 2/6. Engineering Project (1 - 2)/Pathfinder Images/PathPlannerYYM.jpg'), true);
     const pathFromImage = new PathFromImage({
         width: image.width,
         height: image.height,
@@ -103,9 +143,11 @@ function findPath() {
         i++;
     }
     i = 0;
+    var count = 0;
 
     start:
         for (i = 0; i < path.length-1; i++) {
+            count++;
             var changeX = path[i + 1][0] - path[i][0];
             var changeY = path[i + 1][1] - path[i][1];
             
@@ -113,6 +155,10 @@ function findPath() {
             if ((yChanged == false && xChanged == false) && (changeY < -15)){
                 console.log(i);
                 console.log('Forward 0');
+                command[count] = 'F0, ';
+                btSerial.write(new Buffer('F', 'utf-8'), function(err, bytesWritten) {
+                    if (err) console.log(err);
+                });
                 yChanged = true;
                 xChanged = false;
                 continue start;
@@ -124,6 +170,10 @@ function findPath() {
                 if(changeX > 15) {
                     console.log(i);
                     console.log('Right 1');
+                    command[count] = 'R, ';
+                    btSerial.write(new Buffer('R', 'utf-8'), function(err, bytesWritten) {
+                        if (err) console.log(err);
+                    });
                     yChanged = false;
                     xChanged = true;
                     directionR = true;
@@ -131,7 +181,11 @@ function findPath() {
                     if (directionR == true && changeX > 10) {
                         i++;
                         console.log(i);
-                        console.log('Forward 1');                    
+                        console.log('Forward 1'); 
+                        command[count+1] = 'F, ';   
+                        btSerial.write(new Buffer('F', 'utf-8'), function(err, bytesWritten) {
+                            if (err) console.log(err);
+                        });                
                         continue start;
                     }
                 }
@@ -139,6 +193,10 @@ function findPath() {
                 else if(changeX < -15) {
                     console.log(i);
                     console.log('Left 1');
+                    command[count] = 'L, ';
+                    btSerial.write(new Buffer('L', 'utf-8'), function(err, bytesWritten) {
+                        if (err) console.log(err);
+                    });
                     yChanged = false;
                     xChanged = true;
                     directionL = true;
@@ -147,6 +205,11 @@ function findPath() {
                        // i++;
                         console.log(i);
                         console.log('Forward 1');
+                        count++;
+                        command[count] = 'F, ';
+                        btSerial.write(new Buffer('F', 'utf-8'), function(err, bytesWritten) {
+                            if (err) console.log(err);
+                        });
                         continue start;
                 }
             }
@@ -158,14 +221,28 @@ function findPath() {
             if (directionR == true && changeY < -15) {
                 console.log(i);
                 console.log('Left 2');
+                command[count] = 'L, ';
+                btSerial.write(new Buffer('L', 'utf-8'), function(err, bytesWritten) {
+                    if (err) console.log(err);
+                });
                 //Moving robot Forward
                 if (directionR == true && changeY < -15) {
                     i++;
                     console.log(i);
                     console.log('Forward 2'); 
+                    count++;
+                    command[count] = 'F, ';
+                    btSerial.write(new Buffer('F', 'utf-8'), function(err, bytesWritten) {
+                        if (err) console.log(err);
+                    });
                     if (changeY < -100){
                         console.log(i);
-                        console.log('Forward 2');  
+                        console.log('Forward 2'); 
+                        count++;
+                        command[count] = 'F, ';
+                        btSerial.write(new Buffer('F', 'utf-8'), function(err, bytesWritten) {
+                            if (err) console.log(err);
+                        });
                     }
                     yChanged = true;
                     xChanged = false;
@@ -177,14 +254,28 @@ function findPath() {
             if (directionL == true && changeY < -15) {
                 console.log(i);
                 console.log('Right 2');
+                command[count] = 'R, ';
+                btSerial.write(new Buffer('R', 'utf-8'), function(err, bytesWritten) {
+                    if (err) console.log(err);
+                });
                 //Moving Robot Forward
                 if (directionL == true && changeY < -15) {
                 //    i++;
                     console.log(i);
                     console.log('Forward 2'); 
+                    count++;
+                    command[count] = 'F, ';
+                    btSerial.write(new Buffer('F', 'utf-8'), function(err, bytesWritten) {
+                        if (err) console.log(err);
+                    });
                     if (changeY < -100){
                         console.log(i);
                         console.log('Forward 2');  
+                        count++;
+                        command[count] = 'F, ';
+                        btSerial.write(new Buffer('F', 'utf-8'), function(err, bytesWritten) {
+                            if (err) console.log(err);
+                        });
                     }
                     yChanged = true;
                     xChanged = false;
@@ -195,6 +286,33 @@ function findPath() {
         }
      console.log('Passing here'+ i);
     }
+    console.log('-----');
+    console.log('Commands Sending: ' + count);
+
+    var str = command.join('');
+    myJSON = JSON.stringify(str);
+
+    //Creates a new Buffer containing the given JavaScript string string. If provided, the encoding parameter identifies the character encoding of string.
+    BT_buffer = Buffer.from(myJSON);
+
+    console.log('myJSON = ' + myJSON);
+    console.log(BT_buffer);
+    console.log(BT_buffer.toString());
+
+    console.log('--Sending--');
+    
+    // btSerial.write(BT_buffer.toString(), function(err, bytesWritten) {
+    //     if (err) console.log(err);
+    //     console.log(BT_buffer.toString);
+    // });
+
+    // btSerial.write(new Buffer('my data', 'utf-8'), function(err, bytesWritten) {
+    //     if (err) console.log(err);
+    // });
+
+    // for (j = 0; j <= count; j++) {
+    //     console.log(command[j]);
+    // }    
 }
 
 function arrangeCanvas(){
@@ -214,6 +332,50 @@ function download() {
     this.href = dt;
 }
 document.getElementById('download').addEventListener('click', download, false);
+
+// $("input").change(function(e) {
+
+//     var c = document.getElementById("canvas");
+//     var ctx = c.getContext("2d");
+//     // for (var i = 0; i < e.originalEvent.srcElement.files.length; i++) {
+
+//     //     var file = e.originalEvent.srcElement.files[i];
+
+//     //     var img = document.createElement("img");
+//     //     var reader = new FileReader();
+//     //     reader.onloadend = function() {
+//     //          img.src = reader.result;
+//     //     }
+//     //     reader.readAsDataURL(file);
+//     //     $("input").after(img);
+//     // }
+
+
+// });
+
+let onDragOver=function(e){
+    e.preventDefault();
+ }
+ let onDrop=function(e){
+     e.preventDefault();
+     let self=e.target;
+     if (e.dataTransfer.files.length == 0)
+         return false;
+     let file = e.dataTransfer.files[0];
+     let reader = new FileReader();
+     reader.onload = function(ev)
+     {
+             let img = new Image();
+         img.src = ev.target.result;
+         img.onload = function(){
+             self.width = img.width;
+             self.height = img.height;
+             self.getContext("2d").drawImage(img, 0, 0, self.width,     self.height);
+         };
+     };
+     reader.readAsDataURL(file);
+ }
+
 
 //Function to initialise canvas and scene
 function init() {

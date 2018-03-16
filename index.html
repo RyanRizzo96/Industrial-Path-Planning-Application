@@ -5,6 +5,10 @@
     <meta charset="UTF-8">
     <title>Path Planner</title>
     <link rel="stylesheet" href="./css/styles.css">
+    <script>window.$ = window.jQuery = require('jquery');</script>
+    <script  src="http://ajax.googleapis.com/ajax/libs/jquery/1/jquery.min.js"></script>
+    <script  src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8.0/jquery-ui.min.js"></script>
+
 </head>
 
 <body>
@@ -92,8 +96,8 @@
             </ul>
 
             <p id="canvasP" align="center">
-                <div id="canvas-holder">
-                    <canvas id="canvas" width="1505" height="500"></canvas>
+                <div id="canvas-holder" >
+                    <canvas id="canvas" width="1505" height="500"  ondrop="onDrop(event);" ondragover="onDragOver(event);"></canvas>
                 </div>
             </p>
             <!-- <meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0"> -->
@@ -101,7 +105,7 @@
                 <li>
                     <div class="button1">
                         <a id="upload" upload="PathPlanner.jpg">Upload JPG:</a> 
-                        <input type="file" name="filename" accept="image/gif, image/jpeg, image/png">
+                        <input type="file" name="filename"  accept="image/gif, image/jpeg, image/png">
                     </div>
                 </li>
 
@@ -109,7 +113,7 @@
             // You can also require other files to run in this process
             // require('./renderer.js')
         </script>
-
+        
         <script src="./node_modules/three/build/three.js"></script>
         <script src="./js/TrackballControls.js"></script>
         <script src="./js/OrbitControls.js"></script>

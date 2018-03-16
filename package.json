@@ -18,9 +18,10 @@
   "license": "CC0-1.0",
   "devDependencies": {
     "electron": "~1.7.8",
-    "electron-rebuild": "^1.6.0"
+    "electron-rebuild": "^1.7.3"
   },
   "dependencies": {
+    "bluetooth-serial-port": "^2.1.5",
     "bootstrap": "^3.3.7",
     "electron-json-storage": "^4.0.2",
     "electron-reload": "^1.2.2",
@@ -30,6 +31,7 @@
     "graceful-fs": "^4.1.11",
     "html2canvas": "^1.0.0-alpha.4",
     "interact.js": "^1.2.8",
+    "jquery": "^3.3.1",
     "line-reader": "^0.4.0",
     "path-from-image": "0.0.4",
     "three": "^0.88.0",
