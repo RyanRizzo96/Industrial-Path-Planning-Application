@@ -914,5 +914,25 @@ function validate(evt) {
 
         if (theEvent.preventDefault)
             theEvent.preventDefault();
-        }
+     }
+     else {
+        //  console.log(key);
+
+         if (key == 'F'){
+            btSerial.write(new Buffer('F', 'utf-8'), function(err, bytesWritten) {
+                if (err) console.log(err);
+            });
+         }
+         if (key == 'L'){
+            btSerial.write(new Buffer('L', 'utf-8'), function(err, bytesWritten) {
+                if (err) console.log(err);
+            });
+         }
+         if (key == 'R'){
+            btSerial.write(new Buffer('R', 'utf-8'), function(err, bytesWritten) {
+                if (err) console.log(err);
+            });
+         }
+     }
+        
 }
