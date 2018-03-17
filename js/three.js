@@ -470,6 +470,11 @@ function createScene() {
     // grid.position.y = 5;
     scene.add(grid);
 
+    var geometry = new THREE.BoxBufferGeometry(150, 150, 150);
+    var edges = new THREE.EdgesGeometry(geometry);
+    var line = new THREE.LineSegments(edges, new THREE.LineBasicMaterial({ color: 0xA9A9A9 }));
+    scene.add(line);
+
     targetForDragging = new THREE.Mesh(
         new THREE.BoxGeometry(20, 25, 20),
         new THREE.MeshBasicMaterial({ color: "red" })
