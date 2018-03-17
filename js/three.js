@@ -902,3 +902,17 @@ function setUpTouchHander(element, touchStartFunc, touchMoveFunc, touchEndFunc, 
     }
     element.addEventListener("touchstart", doTouchStart);
 }
+
+function validate(evt) {
+    var theEvent = evt || window.event;
+    var key = theEvent.keyCode || theEvent.which;
+    key = String.fromCharCode(key);
+    var regex = /^[FLR]/;
+    if (!regex.test(key))
+    {
+        theEvent.returnValue = false;
+
+        if (theEvent.preventDefault)
+            theEvent.preventDefault();
+        }
+}

@@ -149,9 +149,7 @@ input[type=radio]:checked~label {
     color: royalblue;
 }
 
-#upload:hover {
-    /* color: red; */
-}
+
 
 .button {
     padding: 20px;
