@@ -112,13 +112,13 @@ function findPath() {
     //Path PlannerYY  (6 machines) (580|165, 250, 338) (840|164, 251, 338)
     //Path PlannerYYM (6 machines) (580|180, 250, 334) (925|164, 248, 336)
  
-    const startCoords = [752, 421]; //[628, 312];    [628, 124];  [751, 420];/[876, 248];
-    const finishCoords = [580, 180];
+    // const startCoords = [752, 421]; //[628, 312];    [628, 124];  [751, 420];/[876, 248];
+    // const finishCoords = [580, 180];
 
     console.log("Starting Point: " + startCoords);
     console.log("Finishing Point: " + finishCoords);
 
-    const image = jpeg.decode(fs.readFileSync('/Users/ryanr/OneDrive/Desktop/MCAST Degree 2/6. Engineering Project (1 - 2)/Pathfinder Images/PathPlannerYYM.jpg'), true);
+    const image = jpeg.decode(fs.readFileSync('/Users/ryanr/OneDrive/Desktop/MCAST Degree 2/6. Engineering Project (1 - 2)/Pathfinder Images/PathPlannertest.jpg'), true);
     const pathFromImage = new PathFromImage({
         width: image.width,
         height: image.height,
@@ -612,6 +612,7 @@ function doMouseDown(x, y) {
             }
             return false;
         case ADD_MACHINE:
+            controls.enabled = false;
             if (objectHit == grid || objectHit == gridWithDiagonals2) {
 
                 var locationX1 = intersect.point.x; // Gives the point of intersection in world coords
@@ -636,6 +637,7 @@ function doMouseDown(x, y) {
             }
             return false;
         case ADD_HOME:
+            controls.enabled = false;
             // controls.enableRotate = false;
             if (objectHit == grid || objectHit == gridWithDiagonals2) {
                 var locationX5 = intersect.point.x; // Gives the point of intersection in world coords
@@ -661,6 +663,7 @@ function doMouseDown(x, y) {
             }
             return false;
         case ADD_LINE:
+            controls.enabled = false;
             if (objectHit == grid || objectHit == gridWithDiagonals2) {
                 var locationX2 = intersect.point.x; // Gives the point of intersection in world coords
                 var locationZ2 = intersect.point.z;
@@ -670,6 +673,7 @@ function doMouseDown(x, y) {
             }
             return false;
         case ADD_LINE_HOR:
+            controls.enabled = false;
             if (objectHit == grid) {
                 var locationX3 = intersect.point.x; // Gives the point of intersection in world coords
                 var locationZ3 = intersect.point.z;
@@ -680,12 +684,14 @@ function doMouseDown(x, y) {
             return false;
 
         case SELECT_FINISH:
+            controls.enabled = false;
             //Detecting where user wants robot to finish
             finishCoords = [xCordMouse, yCordMouse];
             console.log("Finish coords at " + finishCoords);
             return false;
 
         case DELETE:
+            controls.enabled = false;
             if (objectHit != gridWithDiagonals2) {
                 if (objectHit != grid) {
                     scene.remove(objectHit);
@@ -701,26 +707,7 @@ function doMouseMove(x, y, evt, prevX, prevY) {
 
     if (mouseAction == ROTATE) {
 
-    } else { // drag
-
-        // var a = 2 * x / canvas.width - 1;
-        // var b = 1 - 2 * y / canvas.height;
-        // raycaster.setFromCamera(new THREE.Vector2(a, b), camera);
-        // intersects = raycaster.intersectObject(targetForDragging);
-        // if (intersects.length == 0) {
-        //     return;
-        // }
-        // var locationX = intersects[0].point.x;
-        // var locationZ = intersects[0].point.z;
-        // var coords = new THREE.Vector3(locationX, 0, locationZ);
-        // scene.worldToLocal(coords);
-
-        // //Clamping cylinders to ground when being dragged. This depends on size of grid
-        // a = Math.min(39, Math.max(-39, coords.x));
-        // b = Math.min(39, Math.max(-39, coords.z));
-        // dragItem.position.set(a, 0, b);
-        // render();
-    }
+    } 
 }
 
 function doChangeMouseAction() {
@@ -730,23 +717,23 @@ function doChangeMouseAction() {
     }
     else if (document.getElementById("mouseAddMachine").checked) {
         mouseAction = ADD_MACHINE;
-          controls.enableRotate = false;
+          controls.enabled = false;
     } else if (document.getElementById("mouseAddLine").checked) {
         mouseAction = ADD_LINE;
-          controls.enableRotate = false;
+          controls.enabled = false;
     } else if (document.getElementById("mouseAddLineHor").checked) {
         mouseAction = ADD_LINE_HOR;
-         controls.enableRotate = false;
+         controls.enabled = false;
     } else if (document.getElementById("mouseAddHome").checked) {
-          controls.enableRotate = false;
+          controls.enabled = false;
         mouseAction = ADD_HOME;
     }
     else if (document.getElementById("mouseSelectFinish").checked) {
-         controls.enableRotate = false;
+         controls.enabled = false;
         mouseAction = SELECT_FINISH;
     }
     else if (document.getElementById("mouseDelete").checked) {
-          controls.enableRotate = false;
+          controls.enabled = false;
         mouseAction = DELETE;
     }
 }
@@ -908,6 +895,7 @@ function setUpTouchHander(element, touchStartFunc, touchMoveFunc, touchEndFunc, 
     element.addEventListener("touchstart", doTouchStart);
 }
 
+//Function to receive user input and send via bluetooth
 function validate(evt) {
     var theEvent = evt || window.event;
     var key = theEvent.keyCode || theEvent.which;
