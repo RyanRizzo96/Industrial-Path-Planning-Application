@@ -4,6 +4,7 @@ var line_vert, line_hor, home, scene, cylinder, ground;
 var ROTATE = 1,
     DRAG= 12;
     SELECT_FINISH = 2,
+    SELECT_NODE = 11,
     ADD_NODE = 3,
     DELETE = 4,
     ADD_MACHINE = 5,
@@ -19,12 +20,18 @@ var n = 0;
 var CheckMovement;
 var targetForDragging; // An invisible object that is used as the target for raycasting while dragging a cylinder.
 
-var xCordMachine, yCordMachine, xCordHome, yCordHome;
+var xCordMachine, yCordMachine, xCordHome, yCordHome, xCordNode, yCordNode;
 var xCordMouse, yCordMouse, xCordMouse, yCordMouse;
 var coords_node, coords_machine, coords_home;
 var startCoords;
 var finishCoords;
 var myJSON_Home, myJSON_Machine; 
+
+var node_loc = [];    //initialize array to hold coordinates
+var node_weight = []; //initialize array to hold wieghts
+var node_counter = -1;
+var nodeCoords, weight_y, weight_x, edgeWeight, x, y, e, pos, testflag;
+
 
 var myJSON;
 var BT_buffer;
@@ -65,6 +72,17 @@ function connectBluetooth() {
     btSerial.inquire();    
 }
 
+//Function to stroe simple object in an array. takes in x and y coords
+function storeCoordinate(pos, xVal, yVal, array) {
+    //The push() method adds one or more elements to the end of an array and returns the new length of the array.
+    array.push({p: pos, x: xVal, y: yVal});
+}
+
+//Function to stroe simple object in an array. takes in x and y weights
+function storeWeight(edge, xVal, yVal, array) {
+    //The push() method adds one or more elements to the end of an array and returns the new length of the array.
+    array.push({e: edge, x: xVal, y: yVal});
+}
 
 function storeDataHome() {
     //const {app} = require('electron')
@@ -79,7 +97,7 @@ function storeDataHome() {
         if (err) throw err;
 
         //success case
-        console.log('Successful Home Coords' + myJSON_Home + 'Saved');
+        //console.log('Successful Home Coords' + myJSON_Home + 'Saved');
     });
     
 }
@@ -97,11 +115,36 @@ function storeDataMachine() {
         if (err) throw err;
 
         //success case
-        console.log('Successful Machine Coords' + myJSON_Machine + 'Saved' );
+        //console.log('Successful Machine Coords' + myJSON_Machine + 'Saved' );
     });
      
 }
 
+function findPath1() {
+    //Print node co-ordinates
+    for (var i = 0; i < node_loc.length; i++) {
+        x = node_loc[i].x;
+        y = node_loc[i].y;
+        console.log("N", i, ":", node_loc[i].x, node_loc[i].y);
+    } 
+
+    for (var j = 0; j < node_loc.length-1; j++) {
+        weight_x = node_loc[j+1].x - node_loc[j].x;
+        weight_y = node_loc[j+1].y - node_loc[j].y;
+        edgeWeight = [j,j+1];
+
+        //if-conditions to cancel out errors
+        if ((weight_x <= 10 && weight_x >=0) || (weight_x >= -10 && weight_x <=0)) {
+            weight_x = 0;
+        }
+        if ((weight_y <= 10 && weight_y >=0) || (weight_y >= -10 && weight_y <=0)) {
+            weight_y = 0;
+        }
+
+        storeWeight(edgeWeight, weight_x, weight_y, node_weight);
+        console.log("E", node_weight[j].e, ":", "x:", node_weight[j].x, "y:", node_weight[j].y);
+    }
+}
 
 //Function to find shortest path
 function findPath() {
@@ -112,13 +155,13 @@ function findPath() {
     //Path PlannerYY  (6 machines) (580|165, 250, 338) (840|164, 251, 338)
     //Path PlannerYYM (6 machines) (580|180, 250, 334) (925|164, 248, 336)
  
-    // const startCoords = [752, 421]; //[628, 312];    [628, 124];  [751, 420];/[876, 248];
-    // const finishCoords = [580, 180];
+     //const startCoords = [752, 421]; //[628, 312];    [628, 124];  [751, 420];/[876, 248];
+     //const finishCoords = [580, 180];
 
     console.log("Starting Point: " + startCoords);
     console.log("Finishing Point: " + finishCoords);
 
-    const image = jpeg.decode(fs.readFileSync('/Users/ryanr/OneDrive/Desktop/MCAST Degree 2/6. Engineering Project (1 - 2)/Pathfinder Images/PathPlannertest.jpg'), true);
+    const image = jpeg.decode(fs.readFileSync('/Users/ryanr/OneDrive/Desktop/MCAST Degree 2/6. Engineering Project (1 - 2)/Pathfinder Images/PathPlannertester.jpg'), true);
     const pathFromImage = new PathFromImage({
         width: image.width,
         height: image.height,
@@ -145,6 +188,7 @@ function findPath() {
     i = 0;
     var count = 0;
 
+    //Remember
     start:
         for (i = 0; i < path.length-1; i++) {
             count++;
@@ -237,7 +281,7 @@ function findPath() {
                     });
                     if (changeY < -100){
                         console.log(i);
-                        console.log('Forward 2'); 
+                        console.log('Forward 2.1'); 
                         count++;
                         command[count] = 'F, ';
                         btSerial.write(new Buffer('F', 'utf-8'), function(err, bytesWritten) {
@@ -270,7 +314,7 @@ function findPath() {
                     });
                     if (changeY < -100){
                         console.log(i);
-                        console.log('Forward 2');  
+                        console.log('Forward 2.1');  
                         count++;
                         command[count] = 'F, ';
                         btSerial.write(new Buffer('F', 'utf-8'), function(err, bytesWritten) {
@@ -295,9 +339,9 @@ function findPath() {
     //Creates a new Buffer containing the given JavaScript string string. If provided, the encoding parameter identifies the character encoding of string.
     BT_buffer = Buffer.from(myJSON);
 
-    console.log('myJSON = ' + myJSON);
-    console.log(BT_buffer);
-    console.log(BT_buffer.toString());
+   // console.log('myJSON = ' + myJSON);
+   // console.log(BT_buffer);
+    //console.log(BT_buffer.toString());
 
     console.log('--Sending--');
     
@@ -405,7 +449,7 @@ function init() {
         // Math.round to get rid of long decimal place
         xCordMouse = Math.round((evt.clientX - rect.left) / (rect.right - rect.left) * canvas.width);
         yCordMouse = Math.round((evt.clientY - rect.top) / (rect.bottom - rect.top) * canvas.height);
-      // console.log('x: ' + xCordMouse + ' y: ' + yCordMouse);
+       //console.log('x: ' + xCordMouse + ' y: ' + yCordMouse);
 
     }
 
@@ -418,12 +462,14 @@ function init() {
     document.getElementById("mouseAddHome").checked = true;
     mouseAction = ADD_HOME;
     document.getElementById("mouseAddHome").onchange = doChangeMouseAction;
+    // document.getElementById("mouseAddNode").onchange = doChangeMouseAction;
     document.getElementById("mouseRotate").onchange = doChangeMouseAction;
     document.getElementById("mouseAddMachine").onchange = doChangeMouseAction;
     document.getElementById("mouseAddLine").onchange = doChangeMouseAction;
     document.getElementById("mouseAddLineHor").onchange = doChangeMouseAction;
     document.getElementById("mouseDelete").onchange = doChangeMouseAction;
-    document.getElementById("mouseSelectFinish").onchange = doChangeMouseAction;
+    //document.getElementById("mouseSelectFinish").onchange = doChangeMouseAction;
+    document.getElementById("mouseSelectNode").onchange = doChangeMouseAction;
     // document.getElementById("mouseImage").onchange = doChangeMouseAction;
     createScene();
 
@@ -607,7 +653,9 @@ function doMouseDown(x, y) {
                 var locationZ = intersect.point.z;
                 coords_node = new THREE.Vector3(locationX, 0, locationZ);
                 addNode(coords_node.x, coords_node.z);
-                // console.log("Node at: " + xCord, yCord);
+                xCordNode = xCordMouse;
+                yCordNode = yCordMouse;
+                console.log("Node at: " + xCordNode, yCordNode);
                 render();
             }
             return false;
@@ -626,17 +674,23 @@ function doMouseDown(x, y) {
                 xCordMachine = xCordMouse;
                 yCordMachine = yCordMouse;
                 finishCoords = [xCordMachine, yCordMachine];
-                console.log("Machine at: " + xCordMachine, yCordMachine);
+                //console.log("Machine at: " + xCordMachine, yCordMachine);
+
+                node_counter++;
+                storeCoordinate(node_counter, xCordMachine, yCordMachine, node_loc);
+                console.log("Stored node",node_loc[node_counter].p, ": ",node_loc[node_counter].x, node_loc[node_counter].y)
+                
 
                 //stringifying finsihCoords to send to "server"
                 myJSON_Machine= JSON.stringify(finishCoords);
-                console.log('JSON Machine coords: ' + myJSON_Machine);
+              //  console.log('JSON Machine coords: ' + myJSON_Machine);
 
-                storeDataMachine();
+                //storeDataMachine();
                 render();
             }
             return false;
         case ADD_HOME:
+            
             controls.enabled = false;
             // controls.enableRotate = false;
             if (objectHit == grid || objectHit == gridWithDiagonals2) {
@@ -651,13 +705,19 @@ function doMouseDown(x, y) {
                 xCordHome = xCordMouse;
                 yCordHome = yCordMouse;
                 startCoords = [xCordHome, yCordHome];              
-                console.log("Home at: " + xCordHome, yCordHome);
+                //console.log("Home at: " + xCordHome, yCordHome);
+
+                node_counter++;
+                storeCoordinate(node_counter, xCordHome, yCordHome, node_loc);
+                console.log("Stored node",node_loc[node_counter].p, ": ",node_loc[node_counter].x, node_loc[node_counter].y)
+              
+
 
                 //stringifying finsihCoords to send to "server"
                 myJSON_Home = JSON.stringify(startCoords);
-                console.log('JSON Home coords: ' + myJSON_Home);
+               // console.log('JSON Home coords: ' + myJSON_Home);
 
-                storeDataHome();
+                //storeDataHome();
                 render();
 
             }
@@ -689,6 +749,64 @@ function doMouseDown(x, y) {
             finishCoords = [xCordMouse, yCordMouse];
             console.log("Finish coords at " + finishCoords);
             return false;
+    
+        case SELECT_NODE:
+
+            controls.enabled = false;
+            //Detecting where user wants robot to finish
+            nodeCoords = [xCordMouse, yCordMouse];
+            console.log("Node coords at " + nodeCoords);
+
+            if ((Math.abs(xCordMouse - node_loc[0].x <= 10)) && (Math.abs(yCordMouse - node_loc[0].y <= 10)) && testflag!= true) {
+                console.log("found home at", node_loc[0].x, node_loc[0].y);
+                weight_x = node_loc[0].x - node_loc[node_loc.length-1].x;
+                weight_y = node_loc[0].y - node_loc[node_loc.length-1].y;
+
+                //if-conditions to cancel out errors
+                if ((weight_x <= 10 && weight_x >=0) || (weight_x >= -10 && weight_x <=0)) {
+                    weight_x = 0;
+                }
+                if ((weight_y <= 10 && weight_y >=0) || (weight_y >= -10 && weight_y <=0)) {
+                    weight_y = 0;
+                }
+
+                edgeWeight = [node_loc.length-1, 0];
+                storeWeight(edgeWeight, weight_x, weight_y, node_weight);
+
+                testflag = true;
+            }
+
+           
+           // for (var i = 0; i < 5; i++) {
+            go:
+                for (var j = 1; j < node_loc.length-1; j++) { 
+                    if ((Math.abs(xCordMouse - node_loc[j].x <= 10)) && (Math.abs(yCordMouse - node_loc[j].y <= 10))) {
+                        console.log(j);
+                        console.log("found coord at", node_loc[j].x, node_loc[j].y);
+                        weight_x = node_loc[j].x - node_loc[node_loc.length-1].x;
+                        weight_y = node_loc[j].y - node_loc[node_loc.length-1].y;
+
+                        //if-conditions to cancel out errors
+                        if ((weight_x <= 10 && weight_x >=0) || (weight_x >= -10 && weight_x <=0)) {
+                            weight_x = 0;
+                        }
+                        if ((weight_y <= 10 && weight_y >=0) || (weight_y >= -10 && weight_y <=0)) {
+                            weight_y = 0;
+                        }
+
+                        edgeWeight = [j, node_counter];
+                        storeWeight(edgeWeight, weight_x, weight_y, node_weight);
+                        
+                        break go;
+                    }
+                }
+        //    }
+
+            for (var j = 0; j < node_loc.length; j++) {
+            console.log("E", node_weight[j].e, ":", "x:", node_weight[j].x, "y:", node_weight[j].y);
+            }
+
+        return false;    
 
         case DELETE:
             controls.enabled = false;
@@ -718,7 +836,12 @@ function doChangeMouseAction() {
     else if (document.getElementById("mouseAddMachine").checked) {
         mouseAction = ADD_MACHINE;
           controls.enabled = false;
-    } else if (document.getElementById("mouseAddLine").checked) {
+    } 
+    // else if (document.getElementById("mouseAddNode").checked) {
+    //     mouseAction = ADD_NODE;
+    //       controls.enabled = false;
+    // }
+    else if (document.getElementById("mouseAddLine").checked) {
         mouseAction = ADD_LINE;
           controls.enabled = false;
     } else if (document.getElementById("mouseAddLineHor").checked) {
@@ -728,10 +851,14 @@ function doChangeMouseAction() {
           controls.enabled = false;
         mouseAction = ADD_HOME;
     }
-    else if (document.getElementById("mouseSelectFinish").checked) {
-         controls.enabled = false;
-        mouseAction = SELECT_FINISH;
-    }
+    // else if (document.getElementById("mouseSelectFinish").checked) {
+    //      controls.enabled = false;
+    //     mouseAction = SELECT_FINISH;
+    // }
+    else if (document.getElementById("mouseSelectNode").checked) {
+        controls.enabled = false;
+       mouseAction = SELECT_NODE;
+   }
     else if (document.getElementById("mouseDelete").checked) {
           controls.enabled = false;
         mouseAction = DELETE;
@@ -900,32 +1027,44 @@ function validate(evt) {
     var theEvent = evt || window.event;
     var key = theEvent.keyCode || theEvent.which;
     key = String.fromCharCode(key);
-    var regex = /^[FLR]/;
-    if (!regex.test(key))
-    {
-        theEvent.returnValue = false;
+    //var regex = /^[FLR]/;
+    //if (!regex.test(key))
+    //{
 
-        if (theEvent.preventDefault)
-            theEvent.preventDefault();
-     }
-     else {
-        //  console.log(key);
 
-         if (key == 'F'){
-            btSerial.write(new Buffer('F', 'utf-8'), function(err, bytesWritten) {
+
+     //   theEvent.returnValue = false;
+
+     //   if (theEvent.preventDefault)
+     //       theEvent.preventDefault();
+     //}
+     //else {
+          
+        if (key == 'F'){
+            btSerial.write(new Buffer('-F', 'utf-8'), function(err, bytesWritten) {
+                console.log(key);
                 if (err) console.log(err);
             });
-         }
          if (key == 'L'){
             btSerial.write(new Buffer('L', 'utf-8'), function(err, bytesWritten) {
+                console.log(key);
                 if (err) console.log(err);
             });
          }
          if (key == 'R'){
             btSerial.write(new Buffer('R', 'utf-8'), function(err, bytesWritten) {
+                console.log(key);
                 if (err) console.log(err);
             });
          }
-     }
+         if (key == 'E'){
+            btSerial.write(new Buffer('E', 'utf-8'), function(err, bytesWritten) {
+                console.log(key);
+                if (err) console.log(err);
+            });
+        }
+        
+    }
+     //}
         
 }
