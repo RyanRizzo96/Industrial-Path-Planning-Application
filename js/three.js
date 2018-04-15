@@ -780,11 +780,12 @@ function doMouseDown(x, y) {
            // for (var i = 0; i < 5; i++) {
             go:
                 for (var j = 1; j < node_loc.length-1; j++) { 
-                    if ((Math.abs(xCordMouse - node_loc[j].x <= 10)) && (Math.abs(yCordMouse - node_loc[j].y <= 10))) {
-                        console.log(j);
-                        console.log("found coord at", node_loc[j].x, node_loc[j].y);
-                        weight_x = node_loc[j].x - node_loc[node_loc.length-1].x;
-                        weight_y = node_loc[j].y - node_loc[node_loc.length-1].y;
+                    if (((Math.abs(xCordMouse - node_loc[j].x )) <= 10 ) && ((Math.abs(yCordMouse - node_loc[j].y )) <= 10)) {
+                        console.log(((xCordMouse - node_loc[j].x)), (Math.abs(yCordMouse - node_loc[j].y)));
+                        console.log((xCordMouse - node_loc[j].x <= 10));
+                        console.log("found coord", j ,"at", node_loc[j].x, node_loc[j].y);
+                        weight_x = node_loc[node_loc.length-1].x - node_loc[j].x;
+                        weight_y = node_loc[node_loc.length-1].y - node_loc[j].y;
 
                         //if-conditions to cancel out errors
                         if ((weight_x <= 10 && weight_x >=0) || (weight_x >= -10 && weight_x <=0)) {
