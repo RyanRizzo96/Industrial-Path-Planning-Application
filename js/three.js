@@ -84,41 +84,41 @@ function storeWeight(edge, xVal, yVal, array) {
     array.push({e: edge, x: xVal, y: yVal});
 }
 
-function storeDataHome() {
-    //const {app} = require('electron')
-    var fs = require('graceful-fs')
+// function storeDataHome() {
+//     //const {app} = require('electron')
+//     var fs = require('graceful-fs')
         
-    const storage = require('electron-json-storage');
-    const dataPath = storage.getDataPath();
-    console.log('Saving to: ' + dataPath);
+//     const storage = require('electron-json-storage');
+//     const dataPath = storage.getDataPath();
+//     console.log('Saving to: ' + dataPath);
 
-    fs.writeFile('/Users/ryanr/AppData/Roaming/electron-quick-start/storage', myJSON_Home  + "\r\n", (err) =>  {
-        //if error, catch
-        if (err) throw err;
+//     fs.writeFile('/Users/ryanr/AppData/Roaming/electron-quick-start/storage', myJSON_Home  + "\r\n", (err) =>  {
+//         //if error, catch
+//         if (err) throw err;
 
-        //success case
-        //console.log('Successful Home Coords' + myJSON_Home + 'Saved');
-    });
+//         //success case
+//         //console.log('Successful Home Coords' + myJSON_Home + 'Saved');
+//     });
     
-}
+// }
 
-function storeDataMachine() {
-    //const {app} = require('electron')
-    var fs = require('graceful-fs')
+// function storeDataMachine() {
+//     //const {app} = require('electron')
+//     var fs = require('graceful-fs')
         
-    const storage = require('electron-json-storage');
-    const dataPath = storage.getDataPath();
-    console.log('Saving to: ' + dataPath);
+//     const storage = require('electron-json-storage');
+//     const dataPath = storage.getDataPath();
+//     console.log('Saving to: ' + dataPath);
 
-    fs.appendFile('/Users/ryanr/AppData/Roaming/electron-quick-start/storage', myJSON_Machine, (err) =>  {
-        //if error, catch
-        if (err) throw err;
+//     fs.appendFile('/Users/ryanr/AppData/Roaming/electron-quick-start/storage', myJSON_Machine, (err) =>  {
+//         //if error, catch
+//         if (err) throw err;
 
-        //success case
-        //console.log('Successful Machine Coords' + myJSON_Machine + 'Saved' );
-    });
+//         //success case
+//         //console.log('Successful Machine Coords' + myJSON_Machine + 'Saved' );
+//     });
      
-}
+// }
 
 function dijkstra() {
     const problem = {
