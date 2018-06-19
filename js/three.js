@@ -183,7 +183,7 @@ function generateGraph() {
 
             //graph.update(j, {nieghbours: j+1})
             graph.addEdge(j,j+1);
-            console.log(graph.edges);
+           // console.log(graph.edges);
 
             //if-conditions to cancel out errors
             if ((weight_x <= 10 && weight_x >=0) || (weight_x >= -10 && weight_x <=0)) {

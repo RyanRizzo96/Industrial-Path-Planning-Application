@@ -14,6 +14,7 @@ h1 {
     font-size: 30px;
     text-transform: uppercase;
     letter-spacing: 12px;
+    
 }
 
 p {
@@ -30,10 +31,12 @@ p {
     text-transform: uppercase;
     letter-spacing: 5px;
     padding-left: 60px;
+    color: #0DFF92;
 }
 
 body {
     background-color: #222222;
+    
 }
 
 maincanvas {
@@ -152,7 +155,7 @@ input[type=radio]:checked~label {
 
 
 .button {
-    padding: 20px;
+    padding: 15px;
 }
 
 input {
