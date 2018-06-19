@@ -314,6 +314,7 @@ function findPath() {
                         yChanged = false;
                         xChanged = true;
                         directionL = true;
+                        directionR = false;
                         //Moving Robot Forward, incrementing step
                         if (directionL == true && changeX < -10) {
                         // i++;
