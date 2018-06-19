@@ -926,12 +926,6 @@ function doMouseDown(x, y) {
                 edgeWeight = [node_loc.length-1, 0];
                 storeWeight(edgeWeight, weight_x, weight_y, node_weight);
 
-                // s = String.fromCharCode(c);
-                // c = new Map()
-                // c.set (String.fromCharCode(C+1), weights_total[j]);
-                // route.addNode(String.fromCharCode(C), c);
-                // c++;
-                // C++;
                 testflag = true;
             }
 
@@ -955,7 +949,6 @@ function doMouseDown(x, y) {
                         //find absolute total weight
                          weights_total[j] = Math.abs(weight_x) + Math.abs(weight_y);
 
-                         
                         //graph.addEdge(j, node_counter);
                         console.log('ADDED EDGE test', j, node_counter)
                         edgeWeight = [j, node_counter]; // [0, 1]
@@ -966,20 +959,14 @@ function doMouseDown(x, y) {
                     }
                 }
             }
-        //    }
+
             for (var j = 0; j < node_loc.length - 1; j++) {
                 console.log(node_loc.length)
-            //    console.log("E", node_weight[j].e, ":", "x:", node_weight[j].x, "y:", node_weight[j].y);
-                // if (generateGraph_count != 0) {
-                //     graph.addEdge(enode_weight[j].e);
-                //     console.log(graph.edges);
-                // }
                 console.log(j);
                 weights_total[j] = Math.abs(node_weight[j].x) + Math.abs(node_weight[j].y);
                 console.log("weightstotal", weights_total[j])
                 graph.update(j, {weight: weights_total[j]})
             }
-
 
             console.log(graph.nodes);
             console.log(graph.edgeCount, "edges");
