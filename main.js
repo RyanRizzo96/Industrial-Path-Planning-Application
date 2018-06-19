@@ -3,6 +3,7 @@ const electron = require('electron');
 const app = electron.app;
 // Module to create native browser window.
 const BrowserWindow = electron.BrowserWindow;
+const Menu = electron.Menu;
 
 //const {app} = require('electron');
 const path = require('path');
@@ -18,6 +19,34 @@ let mainWindow;
 function createWindow() {
     // Create the browser window
     mainWindow = new BrowserWindow({ width: 1200, height: 1000, icon: '../angular-electron-master/MCAST2.png' });
+
+    // const template = [
+    //     {
+    //         label: 'Help',
+    //         submenu: [
+    //             {
+    //                 label: 'How to Use',
+    //                 click: function(){
+    //                     console.log("clicked sub menu 1")
+    //                 }
+    //             }
+    //         ]
+    //     },
+    //     {
+    //         label: 'About',
+    //         submenu: [
+    //             {
+    //                 label: 'About',
+    //                 click: function(){
+    //                     console.log('Created by Ryan Rizzo, BEEC2')
+    //                 }
+    //             }
+    //         ]
+    //     }
+    // ]
+
+    // const menu = Menu.buildFromTemplate(template)
+    // Menu.setApplicationMenu(menu)
 
     // Setting up of icon image
     //const appIcon = new Tray('../angular-electron-master/MCAST2.png');

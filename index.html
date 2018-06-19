@@ -5,6 +5,7 @@
     <meta charset="UTF-8">
     <title>Path Planner</title>
     <link rel="stylesheet" href="./css/styles.css">
+    <script src="node_modules/graph-dijkstra/dist/graph-dijkstra.js"></script>
     <script>window.$ = window.jQuery = require('jquery');</script>
     <script  src="http://ajax.googleapis.com/ajax/libs/jquery/1/jquery.min.js"></script>
     <script  src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8.0/jquery-ui.min.js"></script>
@@ -53,13 +54,13 @@
                     </div>
                 </li> -->
 
-                <!-- <li>
+                <li>
                     <input type="radio" id="mouseSelectFinish" name="selector">
                     <label for="mouseSelectFinish">Select Finish </label>
                     <div class="check">
                         <div class="inside"></div>
                     </div>
-                </li> -->
+                </li>
                 <li>
                         <input type="radio" id="mouseSelectNode" name="selector">
                         <label for="mouseSelectNode">Select Node </label>
@@ -96,15 +97,15 @@
                         <button class="btn" id="ArrangeCanvas" onclick="arrangeCanvas()">Arrange Canvas</button>
                     </div>
                 </li>  -->
-                <li>
+                <!-- <li>
                     <div class="button1">
                         <a id="download" download="PathPlanner.jpg">Download JPG</a> 
                     </div>
-                </li>
+                </li> -->
                 <li>
                     <div class="button">
                         <!-- <button class="btn" type="submit">Submit!</button> -->
-                        <button class="btn" id="findPath1" onclick="findPath1()">Generate Graph</button>
+                        <button class="btn" id="generateGraph" onclick="generateGraph()">Generate Graph</button>
                     </div>
                 </li>
                 <li>
@@ -152,6 +153,7 @@
         <script src="./js/Projector.js"></script>
         <script src="./js/three.js"></script>
         <script src="./node_modules/path-from-image/dist/ZhangSuen.js"></script>
+        
         <!-- <script src="./js/test.js"></script> -->
 
         <!-- <script src="./node_modules/zhang-suen/src/index.js"></script> -->

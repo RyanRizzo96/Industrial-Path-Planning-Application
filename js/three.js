@@ -29,9 +29,25 @@ var myJSON_Home, myJSON_Machine;
 
 var node_loc = [];    //initialize array to hold coordinates
 var node_weight = []; //initialize array to hold wieghts
+var weights_total = [];
 var node_counter = -1;
 var nodeCoords, weight_y, weight_x, edgeWeight, x, y, e, pos, testflag;
+var finish;
+var generateGraph_count = 0;
+//var c = 95; //ascii a for map
+//var d = 95; //ascii a for map
+//var C = 65; //ascii A for key value pair
 
+//var s = String.fromCharCode(c);
+
+//var Dijkstra= require('../node_modules/graph-dijkstra/dist/graph-dijkstra');
+//var Dijkstra = require('../node_modules/graph-dijkstra/src/graph');
+
+//const Graph = require('graph-dijkstra');
+
+var graph = new Graph();
+var path;
+var letter;
 
 var myJSON;
 var BT_buffer;
@@ -39,25 +55,21 @@ var command = [];
 var btSerial = new (require('bluetooth-serial-port')).BluetoothSerialPort();
 
 connectBluetooth();
-
+console.log("after bt")
 function connectBluetooth() {
 
     btSerial.on('found', function(address, name) {
         btSerial.findSerialPortChannel(address, function(channel) {
             btSerial.connect(address, channel, function() {
                 console.log('Bluetooth Connected');
-     
-                // btSerial.write(new Buffer('my data', 'utf-8'), function(err, bytesWritten) {
-                //     if (err) console.log(err);
-                //     console.log('Sending data via Bluetooth');
-                // }
-     
+
                 btSerial.on('data', function(buffer) {
                     console.log(buffer.toString('utf-8'));
                     //console.log('connected2');
                 });
             }, function () {
                 console.log('cannot connect');
+                console.log('test');
             });
      
             // close the connection when you're ready
@@ -68,7 +80,7 @@ function connectBluetooth() {
             console.log('found nothing');
         });
     });
-  
+    
     btSerial.inquire();    
 }
 
@@ -83,6 +95,15 @@ function storeWeight(edge, xVal, yVal, array) {
     //The push() method adds one or more elements to the end of an array and returns the new length of the array.
     array.push({e: edge, x: xVal, y: yVal});
 }
+
+function myFunction() {
+    for (i = 65; i < 91; i++) {
+        letter = String.fromCharCode(i);
+    }
+}
+
+
+
 
 // function storeDataHome() {
 //     //const {app} = require('electron')
@@ -116,327 +137,356 @@ function storeWeight(edge, xVal, yVal, array) {
 
 //         //success case
 //         //console.log('Successful Machine Coords' + myJSON_Machine + 'Saved' );
-//     });
-     
+//     }); 
 // }
 
-function dijkstra() {
-    const problem = {
-        start: {A: 5, B: 2},
-        A: {C: 4, D: 2},
-        B: {A: 8, D: 7},
-        C: {D: 6, finish: 3},
-        D: {finish: 1},
-        finish: {}
-      };
-      
-      const lowestCostNode = (costs, processed) => {
-        return Object.keys(costs).reduce((lowest, node) => {
-          if (lowest === null || costs[node] < costs[lowest]) {
-            if (!processed.includes(node)) {
-              lowest = node;
-            }
-          }
-          return lowest;
-        }, null);
-      };
-      
-      // function that returns the minimum cost and path to reach Finish
-      const dijkstra = (graph) => {
-      
-        // track lowest cost to reach each node
-        const costs = Object.assign({finish: Infinity}, graph.start);
-      
-        // track paths
-        const parents = {finish: null};
-        for (let child in graph.start) {
-          parents[child] = 'start';
-        }
-      
-        // track nodes that have already been processed
-        const processed = [];
-      
-        let node = lowestCostNode(costs, processed);
-      
-        while (node) {
-          let cost = costs[node];
-          let children = graph[node];
-          for (let n in children) {
-            let newCost = cost + children[n];
-            if (!costs[n]) {
-              costs[n] = newCost;
-              parents[n] = node;
-            }
-            if (costs[n] > newCost) {
-              costs[n] = newCost;
-              parents[n] = node;
-            }
-          }
-          processed.push(node);
-          node = lowestCostNode(costs, processed);
-        }
-      
-        let optimalPath = ['finish'];
-        let parent = parents.finish;
-        while (parent) {
-          optimalPath.push(parent);
-          parent = parents[parent];
-        }
-        optimalPath.reverse();
-      
-        const results = {
-          distance: costs.finish,
-          path: optimalPath
-        };
-      
-        return results;
-      };
-      
-      console.log(dijkstra(problem));
+//Press F5 for refresh
+	document.addEventListener("keydown", function (e) {
+		if (e.which === 123) {
+			require('remote').getCurrentWindow().toggleDevTools();
+		} else if (e.which === 116) {
+			location.reload();
+		}
+	});
 
+
+function dijkstra() {
+
+    //graph, nType, starting point, finish point
+    var results   = Dijkstra.run(graph,0, 0, finish);
+    console.log(results);
+    path = Dijkstra.getPath(results.prev, finish);
+    console.log("Path: ",path);
+    console.log("Path Length: ",path.length);
 }
 
-function findPath1() {
+function generateGraph() {
     //Print node co-ordinates
-    const dijkstra = require('./dijkstra');
-    let val = dijkstra.dijkstra(problem);
+    var route1;
 
-    for (var i = 0; i < node_loc.length; i++) {
-        x = node_loc[i].x;
-        y = node_loc[i].y;
-        console.log("N", i, ":", node_loc[i].x, node_loc[i].y);
-    } 
+    if (generateGraph_count == 0) {
+        for (var i = 0; i < node_loc.length; i++) {
+            x = node_loc[i].x;
+            y = node_loc[i].y;
+            //console.log("N", i, ":", node_loc[i].x, node_loc[i].y);
+            graph.addNode(i);
+            console.log("GD addNode", i)
+        } 
 
-    for (var j = 0; j < node_loc.length-1; j++) {
-        weight_x = node_loc[j+1].x - node_loc[j].x;
-        weight_y = node_loc[j+1].y - node_loc[j].y;
-        edgeWeight = [j,j+1];
+        for (var j = 0; j < node_loc.length-1; j++) {
 
-        //if-conditions to cancel out errors
-        if ((weight_x <= 10 && weight_x >=0) || (weight_x >= -10 && weight_x <=0)) {
-            weight_x = 0;
+            weight_x = node_loc[j+1].x - node_loc[j].x;
+            weight_y = node_loc[j+1].y - node_loc[j].y;
+
+
+            edgeWeight = [j,j+1];
+
+            //graph.update(j, {nieghbours: j+1})
+            graph.addEdge(j,j+1);
+            console.log(graph.edges);
+
+            //if-conditions to cancel out errors
+            if ((weight_x <= 10 && weight_x >=0) || (weight_x >= -10 && weight_x <=0)) {
+                weight_x = 0;
+            }
+            if ((weight_y <= 10 && weight_y >=0) || (weight_y >= -10 && weight_y <=0)) {
+                weight_y = 0;
+            }
+            
+            //find absolute total weight
+            weights_total[j] = Math.abs(weight_x) + Math.abs(weight_y);
+
+            storeWeight(edgeWeight, weight_x, weight_y, node_weight);
+
+            // graph.addNode(j, {weight: weights_total[j]});
+            // console.log("GD addNode2", j, "weight", weights_total[j])
+            // graph.addEdge(j,j+1);
+            // console.log("GD addEdge", j,j+1)
+            
         }
-        if ((weight_y <= 10 && weight_y >=0) || (weight_y >= -10 && weight_y <=0)) {
-            weight_y = 0;
-        }
-
-        storeWeight(edgeWeight, weight_x, weight_y, node_weight);
-        console.log("E", node_weight[j].e, ":", "x:", node_weight[j].x, "y:", node_weight[j].y);
     }
+    else {
+        for (var i = 0; i < node_loc.length; i++) {
+            x = node_loc[i].x;
+            y = node_loc[i].y;
+            //console.log("N", i, ":", node_loc[i].x, node_loc[i].y);
+            graph.addNode(i);
+            console.log("GD addNode", i)
+        } 
+    }
+    console.log("Total W:", weights_total);
+    generateGraph_count++;
+    console.log(generateGraph_count);
 }
 
 //Function to find shortest path
 function findPath() {
-    const fs = require('fs');
-    const jpeg = require('jpeg-js');
-    const PathFromImage = require('path-from-image');
 
-    //Path PlannerYY  (6 machines) (580|165, 250, 338) (840|164, 251, 338)
-    //Path PlannerYYM (6 machines) (580|180, 250, 334) (925|164, 248, 336)
- 
-     //const startCoords = [752, 421]; //[628, 312];    [628, 124];  [751, 420];/[876, 248];
-     //const finishCoords = [580, 180];
+        const robot_move= [];
 
-    console.log("Starting Point: " + startCoords);
-    console.log("Finishing Point: " + finishCoords);
+        console.log("For loop");
 
-    const image = jpeg.decode(fs.readFileSync('/Users/ryanr/OneDrive/Desktop/MCAST Degree 2/6. Engineering Project (1 - 2)/Pathfinder Images/PathPlannertester.jpg'), true);
-    const pathFromImage = new PathFromImage({
-        width: image.width,
-        height: image.height,
-        imageData: image.data,
-        colorPatterns: [{ r: [60, 75], g: [0, 0], b: [60, 130] }], // description of the mauve / ping color
-    });
-    const path = pathFromImage.path(startCoords, finishCoords); // => [[62, 413], [63, 406], [69, 390], ...]
-
-    var i = 0;
-    var xChanged = false;
-    var yChanged = false;
-    var x = 0;
-    var y = 1;
-    var directionR = false;
-    var directionL = false;
-
-
-    console.log(path.length);
-    //console.log(path);
-    while (i < path.length) {
-        console.log(path[i]);
-        i++;
-    }
-    i = 0;
-    var count = 0;
-
-    //Remember
-    start:
-        for (i = 0; i < path.length-1; i++) {
-            count++;
-            var changeX = path[i + 1][0] - path[i][0];
-            var changeY = path[i + 1][1] - path[i][1];
-            
-            //Robot in Start position
-            if ((yChanged == false && xChanged == false) && (changeY < -15)){
-                console.log(i);
-                console.log('Forward 0');
-                command[count] = 'F0, ';
-                btSerial.write(new Buffer('F', 'utf-8'), function(err, bytesWritten) {
-                    if (err) console.log(err);
-                });
-                yChanged = true;
-                xChanged = false;
-                continue start;
+        for (var i = 0; i <= path.length + (node_counter - path.length); i++) {
+            for (var j = 0; j <= path.length + (node_counter - path.length); j++) {
+                if (path[i] == node_loc[j].p) {
+                    robot_move[i] = [node_loc[j].x, node_loc[j].y]; 
+                }
             }
+        }
 
-            //Robot turns either left or right
-            if (yChanged == true && xChanged == false){
-                //Robot turns right
-                if(changeX > 15) {
+        console.log(robot_move);
+
+        var i = 0;
+        var xChanged = false;
+        var yChanged = false;
+        var x = 0;
+        var y = 1;
+        var directionR = false;
+        var directionL = false;
+
+
+        // console.log(path.length);
+        
+        // while (i < path.length) {
+        //     console.log(path[i]);
+        //     i++;
+        // }
+        i = 0;
+        var count = 0;
+
+        //Remember
+        btSerial.write(new Buffer('-', 'utf-8'), function(err, bytesWritten) {
+            if (err) console.log(err);
+        });
+
+        start:
+            for (i = 0; i < robot_move.length-1; i++) {
+                count++;
+                var changeX = robot_move[i + 1][0] - robot_move[i][0];
+                var changeY = robot_move[i + 1][1] - robot_move[i][1];
+                
+                //Robot in Start position
+                if ((yChanged == false && xChanged == false) && (changeY < -15)){
                     console.log(i);
-                    console.log('Right 1');
-                    command[count] = 'R, ';
-                    btSerial.write(new Buffer('R', 'utf-8'), function(err, bytesWritten) {
+                    console.log('Forward 0');
+                    command[count] = 'F0, ';
+                    btSerial.write(new Buffer('F', 'utf-8'), function(err, bytesWritten) {
                         if (err) console.log(err);
                     });
-                    yChanged = false;
-                    xChanged = true;
-                    directionR = true;
-                    //Moving Robot Forward, incrementing step
-                    if (directionR == true && changeX > 10) {
-                        i++;
+                    yChanged = true;
+                    xChanged = false;
+                    continue start;
+                }
+
+                //Robot turns either left or right
+                if (yChanged == true && xChanged == false){
+                    //Robot turns right
+                    if(changeX > 15) {
                         console.log(i);
-                        console.log('Forward 1'); 
-                        command[count+1] = 'F, ';   
-                        btSerial.write(new Buffer('F', 'utf-8'), function(err, bytesWritten) {
+                        console.log('Right 1');
+                        command[count] = 'R, ';
+                        btSerial.write(new Buffer('R', 'utf-8'), function(err, bytesWritten) {
                             if (err) console.log(err);
-                        });                
-                        continue start;
+                        });
+                        yChanged = false;
+                        xChanged = true;
+                        directionR = true;
+                        //Moving Robot Forward, incrementing step
+                        if (directionR == true && changeX > 10) {
+                            //i++;
+                            console.log(i);
+                            console.log('Forward 1'); 
+                            command[count+1] = 'F, ';   
+                            btSerial.write(new Buffer('F', 'utf-8'), function(err, bytesWritten) {
+                                if (err) console.log(err);
+                            });                
+                            continue start;
+                        }
+                    }
+                    //Robot turns left
+                    else if(changeX < -15) {
+                        console.log(i);
+                        console.log('Left 1');
+                        command[count] = 'L, ';
+                        btSerial.write(new Buffer('L', 'utf-8'), function(err, bytesWritten) {
+                            if (err) console.log(err);
+                        });
+                        yChanged = false;
+                        xChanged = true;
+                        directionL = true;
+                        //Moving Robot Forward, incrementing step
+                        if (directionL == true && changeX < -10) {
+                        // i++;
+                            console.log(i);
+                            console.log('Forward 1');
+                            count++;
+                            command[count] = 'F, ';
+                            btSerial.write(new Buffer('F', 'utf-8'), function(err, bytesWritten) {
+                                if (err) console.log(err);
+                            });
+                            continue start;
                     }
                 }
-                //Robot turns left
-                else if(changeX < -15) {
+            }
+            //If robot has just finished move along x-axis
+            //Detecting change in y-axis
+            if(xChanged == true && yChanged == false) {
+                //Robot moving to right must turn left and upwards
+                if (directionR == true && changeY < -15) {
                     console.log(i);
-                    console.log('Left 1');
+                    console.log('Left 2');
                     command[count] = 'L, ';
                     btSerial.write(new Buffer('L', 'utf-8'), function(err, bytesWritten) {
                         if (err) console.log(err);
                     });
-                    yChanged = false;
-                    xChanged = true;
-                    directionL = true;
-                    //Moving Robot Forward, incrementing step
-                    if (directionL == true && changeX < -10) {
-                       // i++;
+                    //Moving robot Forward
+                    if (directionR == true && changeY < -15) {
+                        //i++;
                         console.log(i);
-                        console.log('Forward 1');
+                        console.log('Forward 2'); 
                         count++;
                         command[count] = 'F, ';
                         btSerial.write(new Buffer('F', 'utf-8'), function(err, bytesWritten) {
                             if (err) console.log(err);
                         });
+                        if (changeY < -100){
+                            console.log(i);
+                            console.log('Forward 2.1'); 
+                            count++;
+                            command[count] = 'F, ';
+                            btSerial.write(new Buffer('F', 'utf-8'), function(err, bytesWritten) {
+                                if (err) console.log(err);
+                            });
+                        }
+                        yChanged = true;
+                        xChanged = false;
+                        dirctionL = false;
                         continue start;
-                }
-            }
-        }
-        //If robot has just finished move along x-axis
-        //Detecting change in y-axis
-        if(xChanged == true && yChanged == false) {
-            //Robot moving to right must turn left and upwards
-            if (directionR == true && changeY < -15) {
-                console.log(i);
-                console.log('Left 2');
-                command[count] = 'L, ';
-                btSerial.write(new Buffer('L', 'utf-8'), function(err, bytesWritten) {
-                    if (err) console.log(err);
-                });
-                //Moving robot Forward
-                if (directionR == true && changeY < -15) {
-                    i++;
-                    console.log(i);
-                    console.log('Forward 2'); 
-                    count++;
-                    command[count] = 'F, ';
-                    btSerial.write(new Buffer('F', 'utf-8'), function(err, bytesWritten) {
-                        if (err) console.log(err);
-                    });
-                    if (changeY < -100){
-                        console.log(i);
-                        console.log('Forward 2.1'); 
-                        count++;
-                        command[count] = 'F, ';
-                        btSerial.write(new Buffer('F', 'utf-8'), function(err, bytesWritten) {
-                            if (err) console.log(err);
-                        });
                     }
-                    yChanged = true;
-                    xChanged = false;
-                    dirctionL = false;
-                    continue start;
                 }
-            }
-            //Robot moving to left must turn right and upwards
-            if (directionL == true && changeY < -15) {
-                console.log(i);
-                console.log('Right 2');
-                command[count] = 'R, ';
-                btSerial.write(new Buffer('R', 'utf-8'), function(err, bytesWritten) {
-                    if (err) console.log(err);
-                });
-                //Moving Robot Forward
+                //Robot moving to left must turn right and upwards
                 if (directionL == true && changeY < -15) {
-                //    i++;
                     console.log(i);
-                    console.log('Forward 2'); 
-                    count++;
-                    command[count] = 'F, ';
-                    btSerial.write(new Buffer('F', 'utf-8'), function(err, bytesWritten) {
+                    console.log('Right 2');
+                    command[count] = 'R, ';
+                    btSerial.write(new Buffer('R', 'utf-8'), function(err, bytesWritten) {
                         if (err) console.log(err);
                     });
-                    if (changeY < -100){
+                    //Moving Robot Forward
+                    if (directionL == true && changeY < -15) {
+                    //    i++;
                         console.log(i);
-                        console.log('Forward 2.1');  
+                        console.log('Forward 2'); 
                         count++;
                         command[count] = 'F, ';
                         btSerial.write(new Buffer('F', 'utf-8'), function(err, bytesWritten) {
                             if (err) console.log(err);
                         });
+                        if (changeY < -100){
+                            console.log(i);
+                            console.log('Forward 2.1');  
+                            count++;
+                            command[count] = 'F, ';
+                            btSerial.write(new Buffer('F', 'utf-8'), function(err, bytesWritten) {
+                                if (err) console.log(err);
+                            });
+                        }
+                        yChanged = true;
+                        xChanged = false;
+                        dirctionR = false;
+                        continue start;
                     }
-                    yChanged = true;
-                    xChanged = false;
-                    dirctionR = false;
-                    continue start;
-                }
-           }
+            }
+                //Here
+                if(xChanged == true && yChanged == false) {
+                    //Robot moving to right must turn left and downwards
+                    if (directionR == true && changeY > 15) {
+                        console.log(i);
+                        console.log('Right test');
+                        command[count] = 'R, ';
+                        btSerial.write(new Buffer('R', 'utf-8'), function(err, bytesWritten) {
+                            if (err) console.log(err);
+                        });
+                        //Moving robot Forward
+                        if (directionR == true && changeY > 15) {
+                            //i++;
+                            console.log(i);
+                            console.log('Forward 2'); 
+                            count++;
+                            command[count] = 'F, ';
+                            btSerial.write(new Buffer('F', 'utf-8'), function(err, bytesWritten) {
+                                if (err) console.log(err);
+                            });
+                            if (changeY > 100){
+                                console.log(i);
+                                console.log('Forward 2.1'); 
+                                count++;
+                                command[count] = 'F, ';
+                                btSerial.write(new Buffer('F', 'utf-8'), function(err, bytesWritten) {
+                                    if (err) console.log(err);
+                                });
+                            }
+                            yChanged = true;
+                            xChanged = false;
+                            dirctionL = false;
+                            continue start;
+                        }
+                    }
+                    //Robot moving to left must turn right and downwards
+                    if (directionL == true && changeY > 15) {
+                        console.log(i);
+                        console.log('Left test');
+                        command[count] = 'L, ';
+                        btSerial.write(new Buffer('L', 'utf-8'), function(err, bytesWritten) {
+                            if (err) console.log(err);
+                        });
+                        //Moving Robot Forward
+                        if (directionL == true && changeY > 15) {
+                        //    i++;
+                            console.log(i);
+                            console.log('Forward 2'); 
+                            count++;
+                            command[count] = 'F, ';
+                            btSerial.write(new Buffer('F', 'utf-8'), function(err, bytesWritten) {
+                                if (err) console.log(err);
+                            });
+                            if (changeY > 100){
+                                console.log(i);
+                                console.log('Forward 2.1');  
+                                count++;
+                                command[count] = 'F, ';
+                                btSerial.write(new Buffer('F', 'utf-8'), function(err, bytesWritten) {
+                                    if (err) console.log(err);
+                                });
+                            }
+                            yChanged = true;
+                            xChanged = false;
+                            dirctionR = false;
+                            continue start;
+                        }
+                    }
+                }           
+            }
+        console.log('Passing here'+ i);
         }
-     console.log('Passing here'+ i);
+        for (var x = 0; x < 2; x++) {
+        btSerial.write(new Buffer('E', 'utf-8'), function(err, bytesWritten) {
+            if (err) console.log(err);
+        });
+        btSerial.write(new Buffer('+++', 'utf-8'), function(err, bytesWritten) {
+            if (err) console.log(err);
+        });
+        // btSerial.write(new Buffer('+', 'utf-8'), function(err, bytesWritten) {
+        //     if (err) console.log(err);
+        // });
+        // btSerial.write(new Buffer('+', 'utf-8'), function(err, bytesWritten) {
+        //     if (err) console.log(err);
+        // });
+
+        console.log('Commands Sending: ' + count);
     }
-    console.log('-----');
-    console.log('Commands Sending: ' + count);
-
-    var str = command.join('');
-    myJSON = JSON.stringify(str);
-
-    //Creates a new Buffer containing the given JavaScript string string. If provided, the encoding parameter identifies the character encoding of string.
-    BT_buffer = Buffer.from(myJSON);
-
-   // console.log('myJSON = ' + myJSON);
-   // console.log(BT_buffer);
-    //console.log(BT_buffer.toString());
-
-    console.log('--Sending--');
-    
-    // btSerial.write(BT_buffer.toString(), function(err, bytesWritten) {
-    //     if (err) console.log(err);
-    //     console.log(BT_buffer.toString);
-    // });
-
-    // btSerial.write(new Buffer('my data', 'utf-8'), function(err, bytesWritten) {
-    //     if (err) console.log(err);
-    // });
-
-    // for (j = 0; j <= count; j++) {
-    //     console.log(command[j]);
-    // }    
 }
+
 
 function arrangeCanvas(){
     // controls.enableRotate = false;
@@ -454,7 +504,7 @@ function download() {
     var dt = canvas.toDataURL('image/jpeg');
     this.href = dt;
 }
-document.getElementById('download').addEventListener('click', download, false);
+//document.getElementById('download').addEventListener('click', download, false);
 
 // $("input").change(function(e) {
 
@@ -547,7 +597,7 @@ function init() {
     document.getElementById("mouseAddLine").onchange = doChangeMouseAction;
     document.getElementById("mouseAddLineHor").onchange = doChangeMouseAction;
     document.getElementById("mouseDelete").onchange = doChangeMouseAction;
-    //document.getElementById("mouseSelectFinish").onchange = doChangeMouseAction;
+    document.getElementById("mouseSelectFinish").onchange = doChangeMouseAction;
     document.getElementById("mouseSelectNode").onchange = doChangeMouseAction;
     // document.getElementById("mouseImage").onchange = doChangeMouseAction;
     createScene();
@@ -734,6 +784,8 @@ function doMouseDown(x, y) {
                 addNode(coords_node.x, coords_node.z);
                 xCordNode = xCordMouse;
                 yCordNode = yCordMouse;
+
+
                 console.log("Node at: " + xCordNode, yCordNode);
                 render();
             }
@@ -758,7 +810,8 @@ function doMouseDown(x, y) {
                 node_counter++;
                 storeCoordinate(node_counter, xCordMachine, yCordMachine, node_loc);
                 console.log("Stored node",node_loc[node_counter].p, ": ",node_loc[node_counter].x, node_loc[node_counter].y)
-                
+                //route.addNode('A', )
+                //graph.addNode(node_counter)
 
                 //stringifying finsihCoords to send to "server"
                 myJSON_Machine= JSON.stringify(finishCoords);
@@ -767,6 +820,7 @@ function doMouseDown(x, y) {
                 //storeDataMachine();
                 render();
             }
+
             return false;
         case ADD_HOME:
             
@@ -827,6 +881,23 @@ function doMouseDown(x, y) {
             //Detecting where user wants robot to finish
             finishCoords = [xCordMouse, yCordMouse];
             console.log("Finish coords at " + finishCoords);
+
+            for (var j = 0; j < node_loc.length; j++) { 
+                if (((Math.abs(xCordMouse - node_loc[j].x )) <= 20 ) && ((Math.abs(yCordMouse - node_loc[j].y )) <= 20)) {
+                    console.log(((xCordMouse - node_loc[j].x)), (Math.abs(yCordMouse - node_loc[j].y)));
+                    console.log("found finish", j ,"at", node_loc[j].x, node_loc[j].y);
+                    finish = j;
+                }
+            }
+
+            // for (var i = 0; i < node_loc.length; i++) {
+            //     for (var j = 0; j < node_loc.length; j++) {
+            //         if (node_loc[j].p ) {
+                        
+            //         }
+            //     }
+            // }
+
             return false;
     
         case SELECT_NODE:
@@ -834,9 +905,9 @@ function doMouseDown(x, y) {
             controls.enabled = false;
             //Detecting where user wants robot to finish
             nodeCoords = [xCordMouse, yCordMouse];
-            console.log("Node coords at " + nodeCoords);
+            console.log("SELECT AT " + nodeCoords);
 
-            if ((Math.abs(xCordMouse - node_loc[0].x <= 10)) && (Math.abs(yCordMouse - node_loc[0].y <= 10)) && testflag!= true) {
+            if (((Math.abs(xCordMouse - node_loc[0].x) <= 10)) && ((Math.abs(yCordMouse - node_loc[0].y) <= 10)) && testflag!= true) {
                 console.log("found home at", node_loc[0].x, node_loc[0].y);
                 weight_x = node_loc[0].x - node_loc[node_loc.length-1].x;
                 weight_y = node_loc[0].y - node_loc[node_loc.length-1].y;
@@ -849,15 +920,22 @@ function doMouseDown(x, y) {
                     weight_y = 0;
                 }
 
+                graph.addEdge(node_loc.length-1, 0);
+                console.log('ADDED EDGE', node_loc.length-1, 0)
                 edgeWeight = [node_loc.length-1, 0];
                 storeWeight(edgeWeight, weight_x, weight_y, node_weight);
 
+                // s = String.fromCharCode(c);
+                // c = new Map()
+                // c.set (String.fromCharCode(C+1), weights_total[j]);
+                // route.addNode(String.fromCharCode(C), c);
+                // c++;
+                // C++;
                 testflag = true;
             }
 
-           
-           // for (var i = 0; i < 5; i++) {
             go:
+            if (testflag != true) {   
                 for (var j = 1; j < node_loc.length-1; j++) { 
                     if (((Math.abs(xCordMouse - node_loc[j].x )) <= 10 ) && ((Math.abs(yCordMouse - node_loc[j].y )) <= 10)) {
                         console.log(((xCordMouse - node_loc[j].x)), (Math.abs(yCordMouse - node_loc[j].y)));
@@ -873,19 +951,39 @@ function doMouseDown(x, y) {
                         if ((weight_y <= 10 && weight_y >=0) || (weight_y >= -10 && weight_y <=0)) {
                             weight_y = 0;
                         }
+                        //find absolute total weight
+                         weights_total[j] = Math.abs(weight_x) + Math.abs(weight_y);
 
-                        edgeWeight = [j, node_counter];
+                         
+                        //graph.addEdge(j, node_counter);
+                        console.log('ADDED EDGE test', j, node_counter)
+                        edgeWeight = [j, node_counter]; // [0, 1]
+                        graph.addEdge(j, node_counter)
                         storeWeight(edgeWeight, weight_x, weight_y, node_weight);
                         
                         break go;
                     }
                 }
+            }
         //    }
-
-            for (var j = 0; j < node_loc.length; j++) {
-            console.log("E", node_weight[j].e, ":", "x:", node_weight[j].x, "y:", node_weight[j].y);
+            for (var j = 0; j < node_loc.length - 1; j++) {
+                console.log(node_loc.length)
+            //    console.log("E", node_weight[j].e, ":", "x:", node_weight[j].x, "y:", node_weight[j].y);
+                // if (generateGraph_count != 0) {
+                //     graph.addEdge(enode_weight[j].e);
+                //     console.log(graph.edges);
+                // }
+                console.log(j);
+                weights_total[j] = Math.abs(node_weight[j].x) + Math.abs(node_weight[j].y);
+                console.log("weightstotal", weights_total[j])
+                graph.update(j, {weight: weights_total[j]})
             }
 
+
+            console.log(graph.nodes);
+            console.log(graph.edgeCount, "edges");
+            
+            //console.log("Total W:", JSON.stringify(weights_total));
         return false;    
 
         case DELETE:
@@ -931,10 +1029,10 @@ function doChangeMouseAction() {
           controls.enabled = false;
         mouseAction = ADD_HOME;
     }
-    // else if (document.getElementById("mouseSelectFinish").checked) {
-    //      controls.enabled = false;
-    //     mouseAction = SELECT_FINISH;
-    // }
+    else if (document.getElementById("mouseSelectFinish").checked) {
+         controls.enabled = false;
+        mouseAction = SELECT_FINISH;
+    }
     else if (document.getElementById("mouseSelectNode").checked) {
         controls.enabled = false;
        mouseAction = SELECT_NODE;
@@ -989,19 +1087,6 @@ function setUpMouseHander(element, mouseDownFunc, mouseDragFunc, mouseUpFunc) {
         if (dragging) {
             document.addEventListener("mousemove", doMouseMove);
             document.addEventListener("mouseup", doMouseUp);
-        }
-    }
-
-    function doMouseMove(evt) {
-        if (dragging) {
-            if (mouseDragFunc) {
-                var r = element.getBoundingClientRect();
-                var x = evt.clientX - r.left;
-                var y = evt.clientY - r.top;
-                mouseDragFunc(x, y, evt, prevX, prevY, startX, startY);
-            }
-            prevX = x;
-            prevY = y;
         }
     }
 
@@ -1121,10 +1206,18 @@ function validate(evt) {
      //else {
           
         if (key == 'F'){
-            btSerial.write(new Buffer('-F', 'utf-8'), function(err, bytesWritten) {
+            btSerial.write(new Buffer('F', 'utf-8'), function(err, bytesWritten) {
                 console.log(key);
                 if (err) console.log(err);
             });
+        }   
+        if (key == '-'){
+            btSerial.write(new Buffer('-', 'utf-8'), function(err, bytesWritten) {
+                console.log(key);
+                if (err) console.log(err);
+            });
+        }   
+            
          if (key == 'L'){
             btSerial.write(new Buffer('L', 'utf-8'), function(err, bytesWritten) {
                 console.log(key);
@@ -1143,8 +1236,12 @@ function validate(evt) {
                 if (err) console.log(err);
             });
         }
+        if (key == '+'){
+            btSerial.write(new Buffer('+', 'utf-8'), function(err, bytesWritten) {
+                console.log(key);
+                if (err) console.log(err);
+            });
+        }
         
     }
-     //}
-        
-}
+     //}    
