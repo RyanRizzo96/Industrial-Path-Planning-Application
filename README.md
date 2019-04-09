@@ -1,5 +1,7 @@
 ![map_project](https://user-images.githubusercontent.com/31866965/53907931-85ec6680-404e-11e9-874b-b79e1ab00c1e.JPG)
 
+Application was built as part of an Engineering Project. A line-following robot capable of transporting material to machines on a shop floor. The robot will be able to: Scan the shop floor for machinery. Detect obstacles in it's path.  Find the shortest route to the machine that is low on material. Allows user to enter a diagrammatic representation of the shop-floor.The application will process the image and come up with the shortest possible route. Commands sent to the robotic system allowing it to navigate to the machine.
+
 
 # electron-quick-start
 
